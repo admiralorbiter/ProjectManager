@@ -1,7 +1,7 @@
 from flask import flash, redirect, render_template, url_for, request, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from forms import LoginForm
-from models import User, db, Project
+from models import User, db, Project, Task
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 
@@ -128,3 +128,49 @@ def init_routes(app):
         # Get all users for member selection
         users = User.query.filter(User.id != current_user.id).all()
         return render_template('edit_project.html', project=project, users=users) 
+
+    @app.route('/project/<int:project_id>/add_task', methods=['POST'])
+    @login_required
+    def add_task(project_id):
+        project = Project.query.get_or_404(project_id)
+        
+        # Check if user has permission to add tasks
+        if project.owner_id != current_user.id and current_user not in project.members:
+            flash('You do not have permission to add tasks to this project.', 'error')
+            return redirect(url_for('view_project', project_id=project_id))
+        
+        # Get form data
+        title = request.form.get('title')
+        description = request.form.get('description')
+        due_date_str = request.form.get('due_date')
+        status = request.form.get('status')
+        
+        # Convert due date string to datetime if provided
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+            except ValueError:
+                flash('Invalid date format', 'error')
+                return redirect(url_for('view_project', project_id=project_id))
+        
+        # Create new task
+        new_task = Task(
+            title=title,
+            description=description,
+            status=status,
+            due_date=due_date,
+            project_id=project_id,
+            created_by_id=current_user.id
+        )
+        
+        try:
+            db.session.add(new_task)
+            db.session.commit()
+            flash('Task added successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error adding task. Please try again.', 'error')
+            print(e)  # For debugging
+        
+        return redirect(url_for('view_project', project_id=project_id))
