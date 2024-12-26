@@ -39,8 +39,31 @@
     <div class="projects-grid">
         {% for project in projects %}
         <div class="project-card">
-            <h3 class="project-title">{{ project.title }}</h3>
+            <h3 class="project-title">
+                <a href="{{ url_for('view_project', project_id=project.id) }}" class="project-title">
+                    {{ project.title }}
+                </a>
+            </h3>
             <p class="project-description">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
+            
+            <div class="project-actions">
+                {% if project.features %}
+                <button class="features-btn" 
+                        data-features='{{ project.features|tojson|safe }}'
+                        data-title="{{ project.title|e }}">
+                    <i class="fas fa-list"></i> View Features
+                </button>
+                {% endif %}
+                
+                {% if project.project_url %}
+                <a href="{{ project.project_url }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="url-button">
+                    <i class="fas fa-external-link-alt"></i> Visit Project
+                </a>
+                {% endif %}
+            </div>
             
             <div class="project-meta">
                 <div class="meta-info">
@@ -56,4 +79,54 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Features Modal -->
+<div id="featuresModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <ul id="featuresList"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click listeners for feature buttons
+    document.querySelectorAll('.features-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const features = JSON.parse(this.dataset.features);
+            const title = this.dataset.title;
+            showFeatures(features, title);
+        });
+    });
+
+    // Show features modal
+    function showFeatures(features, projectTitle) {
+        const modal = document.getElementById('featuresModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const featuresList = document.getElementById('featuresList');
+        
+        modalTitle.textContent = projectTitle + ' - Features';
+        featuresList.innerHTML = features.map(feature => `<li>${feature}</li>`).join('');
+        modal.style.display = 'block';
+    }
+
+    // Close modal when clicking the X button
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('featuresModal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('featuresModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %} 

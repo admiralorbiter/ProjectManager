@@ -98,6 +98,13 @@
     font-size: 1.3rem;
     margin: 0;
     font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+.project-title:hover {
+    color: var(--dark-purple);
 }
 
 .project-description {
@@ -190,14 +197,19 @@
     background-color: var(--eggplant);
     color: var(--pale-dogwood);
     padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     text-decoration: none;
-    font-size: 0.875rem;
-    transition: background-color 0.3s ease;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
 
 .url-button:hover {
     background-color: var(--dark-purple);
+    transform: translateY(-1px);
+}
+
+.url-button i {
+    font-size: 0.8rem;
 }
 
 .project-meta {
@@ -238,4 +250,85 @@
 .task-count.assigned {
     background-color: rgba(183, 93, 105, 0.08);
     color: var(--redwood);
+}
+
+.features-btn {
+    background: none;
+    border: none;
+    color: var(--eggplant);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.features-btn:hover {
+    color: var(--dark-purple);
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    color: var(--dark-purple);
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    color: var(--eggplant);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--dark-purple);
+}
+
+.modal-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-body li {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+    color: var(--raisin-black);
+}
+
+.modal-body li:last-child {
+    border-bottom: none;
 } 
