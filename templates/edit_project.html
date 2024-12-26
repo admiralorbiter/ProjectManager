@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ project.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create_project.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="create-project-container">
+    <h1>Edit Project</h1>
+    
+    <form method="POST" class="project-form">
+        <div class="form-group">
+            <label for="title">Project Title</label>
+            <input type="text" id="title" name="title" required class="form-control" value="{{ project.title }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="4">{{ project.description }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="project_url">Project URL</label>
+            <input type="url" id="project_url" name="project_url" class="form-control" placeholder="https://..." value="{{ project.project_url or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="features">Features</label>
+            <div class="features-container">
+                <div class="feature-list" id="featureList"></div>
+                <div class="feature-input-group">
+                    <input type="text" id="featureInput" class="form-control" placeholder="Add a feature">
+                    <button type="button" onclick="addFeature()" class="btn feature-add-btn">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="active" {% if project.status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="on_hold" {% if project.status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                    <option value="completed" {% if project.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="archived" {% if project.status == 'archived' %}selected{% endif %}>Archived</option>
+                </select>
+            </div>
+
+            <div class="form-group col">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority" class="form-control">
+                    <option value="low" {% if project.priority == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if project.priority == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if project.priority == 'high' %}selected{% endif %}>High</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="due_date">Due Date</label>
+            <input type="date" id="due_date" name="due_date" class="form-control" 
+                   value="{{ project.due_date.strftime('%Y-%m-%d') if project.due_date else '' }}">
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('view_project', project_id=project.id) }}" class="btn cancel-btn">Cancel</a>
+            <button type="submit" class="btn submit-btn">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let features = {{ project.features|tojson|safe }};
+
+function addFeature() {
+    const input = document.getElementById('featureInput');
+    const feature = input.value.trim();
+    
+    if (feature) {
+        features.push(feature);
+        updateFeatureList();
+        input.value = '';
+    }
+}
+
+function removeFeature(index) {
+    features.splice(index, 1);
+    updateFeatureList();
+}
+
+function updateFeatureList() {
+    const list = document.getElementById('featureList');
+    list.innerHTML = '';
+    
+    features.forEach((feature, index) => {
+        const featureElement = document.createElement('div');
+        featureElement.className = 'feature-item';
+        featureElement.innerHTML = `
+            <input type="hidden" name="features[]" value="${feature}">
+            <span>${feature}</span>
+            <button type="button" onclick="removeFeature(${index})" class="btn feature-remove-btn">×</button>
+        `;
+        list.appendChild(featureElement);
+    });
+}
+
+// Initialize feature list on page load
+document.addEventListener('DOMContentLoaded', updateFeatureList);
+</script>
+{% endblock %} 

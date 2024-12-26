@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/view_project.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="project-view-container">
+    <div class="project-header">
+        <div class="header-left">
+            <h1>{{ project.title }}</h1>
+            <div class="project-badges">
+                <span class="priority-badge {{ project.priority }}">{{ project.priority }}</span>
+                <span class="status-badge {{ project.status }}">{{ project.status }}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            {% if current_user.id == project.owner_id %}
+            <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn edit-btn">
+                <i class="fas fa-edit"></i> Edit Project
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="project-content">
+        <div class="main-content">
+            <section class="description-section">
+                <h2>Description</h2>
+                <p>{{ project.description or 'No description provided.' }}</p>
+            </section>
+
+            {% if project.features %}
+            <section class="features-section">
+                <h2>Features</h2>
+                <ul class="features-list">
+                    {% for feature in project.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            <section class="tasks-section">
+                <div class="section-header">
+                    <h2>Tasks</h2>
+                    <button class="btn add-task-btn" onclick="showAddTaskModal()">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+                <div class="tasks-container">
+                    {% if project.tasks %}
+                        {% for task in project.tasks %}
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3>{{ task.title }}</h3>
+                                <span class="task-status {{ task.status }}">{{ task.status }}</span>
+                            </div>
+                            <p>{{ task.description }}</p>
+                            {% if task.assigned_to %}
+                            <div class="task-assignee">
+                                Assigned to: {{ task.assigned_to.username }}
+                            </div>
+                            {% endif %}
+                            {% if task.due_date %}
+                            <div class="task-due-date">
+                                Due: {{ task.due_date.strftime('%Y-%m-%d') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-tasks">No tasks created yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <div class="sidebar">
+            <section class="project-info">
+                {% if project.project_url %}
+                <div class="info-item">
+                    <h3>Project Link</h3>
+                    <a href="{{ project.project_url }}" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-link"></i> View Project
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="info-item">
+                    <h3>Due Date</h3>
+                    <p>{{ project.due_date.strftime('%Y-%m-%d') if project.due_date else 'No due date set' }}</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>Project Owner</h3>
+                    <p>{{ project.owner.username }}</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>Team Members</h3>
+                    <div class="members-list">
+                        {% for member in project.members %}
+                        <div class="member-item">
+                            <span class="member-initial">{{ member.username[0] | upper }}</span>
+                            <span class="member-name">{{ member.username }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <h3>Created</h3>
+                    <p>{{ project.created_at.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %} 

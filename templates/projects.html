@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}My Projects{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="projects-container">
+    <div class="projects-header">
+        <h1>My Projects</h1>
+        <a href="{{ url_for('create_project') }}" class="btn create-project-btn">
+            <i class="fas fa-plus"></i> New Project
+        </a>
+    </div>
+
+    <div class="projects-filters">
+        <div class="search-box">
+            <input type="text" placeholder="Search projects..." id="projectSearch">
+        </div>
+        <div class="filter-options">
+            <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="on_hold">On Hold</option>
+                <option value="archived">Archived</option>
+            </select>
+            <select id="priorityFilter">
+                <option value="">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="projects-grid">
+        {% for project in projects %}
+        <div class="project-card">
+            <h3 class="project-title">{{ project.title }}</h3>
+            <p class="project-description">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
+            
+            <div class="project-meta">
+                <div class="meta-info">
+                    <span class="meta-label">@{{ project.owner.username }}</span>
+                    <span class="status-badge {{ project.status }}">{{ project.status }}</span>
+                </div>
+            </div>
+            <div class="task-stats">
+                <span class="task-count open">{{ project.tasks|selectattr('status', 'equalto', 'open')|list|length }} open</span>
+                <span class="task-count assigned">{{ project.tasks|selectattr('assigned_to_id')|list|length }} assigned</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
