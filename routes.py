@@ -91,7 +91,7 @@ def init_routes(app):
             flash('You do not have access to this project.', 'error')
             return redirect(url_for('projects'))
         
-        return render_template('view_project.html', project=project) 
+        return render_template('view_project.html', project=project, project_id=project_id)
 
     @app.route('/projects/<int:project_id>/edit', methods=['GET', 'POST'])
     @login_required
@@ -132,45 +132,63 @@ def init_routes(app):
     @app.route('/project/<int:project_id>/add_task', methods=['POST'])
     @login_required
     def add_task(project_id):
-        project = Project.query.get_or_404(project_id)
-        
-        # Check if user has permission to add tasks
-        if project.owner_id != current_user.id and current_user not in project.members:
-            flash('You do not have permission to add tasks to this project.', 'error')
-            return redirect(url_for('view_project', project_id=project_id))
-        
-        # Get form data
-        title = request.form.get('title')
-        description = request.form.get('description')
-        due_date_str = request.form.get('due_date')
-        status = request.form.get('status')
-        
-        # Convert due date string to datetime if provided
-        due_date = None
-        if due_date_str:
-            try:
-                due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
-            except ValueError:
-                flash('Invalid date format', 'error')
-                return redirect(url_for('view_project', project_id=project_id))
-        
-        # Create new task
-        new_task = Task(
-            title=title,
-            description=description,
-            status=status,
-            due_date=due_date,
-            project_id=project_id,
-            created_by_id=current_user.id
-        )
-        
         try:
+            project = Project.query.get_or_404(project_id)
+            
+            # Check if user has permission
+            if project.owner_id != current_user.id and current_user not in project.members:
+                return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+            
+            # Get form data
+            title = request.form.get('title')
+            description = request.form.get('description')
+            status = request.form.get('status', 'open')
+            parent_id = request.form.get('parent_id')
+            due_date_str = request.form.get('due_date')
+            
+            # Validate required fields
+            if not title:
+                return jsonify({'success': False, 'error': 'Title is required'}), 400
+            
+            # Convert due date if provided
+            due_date = None
+            if due_date_str:
+                try:
+                    due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid date format'}), 400
+            
+            # Create new task
+            new_task = Task(
+                title=title,
+                description=description,
+                status=status,
+                project_id=project_id,
+                parent_id=parent_id if parent_id else None,
+                due_date=due_date,
+                created_by_id=current_user.id
+            )
+            
             db.session.add(new_task)
             db.session.commit()
-            flash('Task added successfully!', 'success')
+            
+            return jsonify({'success': True})
+            
         except Exception as e:
             db.session.rollback()
-            flash('Error adding task. Please try again.', 'error')
-            print(e)  # For debugging
+            print(f"Error adding task: {str(e)}")  # For debugging
+            return jsonify({'success': False, 'error': 'Server error occurred'}), 500
+
+    @app.route('/api/tasks/<int:task_id>/toggle', methods=['POST'])
+    @login_required
+    def toggle_task(task_id):
+        task = Task.query.get_or_404(task_id)
         
-        return redirect(url_for('view_project', project_id=project_id))
+        # Check if user has access to this task's project
+        if task.project.owner_id != current_user.id and current_user not in task.project.members:
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        
+        task.is_completed = not task.is_completed
+        db.session.commit()
+        
+        return jsonify({'success': True, 'is_completed': task.is_completed})

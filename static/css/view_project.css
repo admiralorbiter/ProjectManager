@@ -133,6 +133,11 @@
     border-radius: 0.5rem;
     margin-bottom: 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+.task-card.completed {
+    opacity: 0.7;
 }
 
 .task-header {
@@ -152,6 +157,65 @@
 .task-status.in_progress { background-color: #fff3e0; color: #ef6c00; }
 .task-status.completed { background-color: #e8f5e9; color: #2e7d32; }
 .task-status.blocked { background-color: #ffebee; color: #c62828; }
+
+.task-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.task-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.subtasks-container {
+    margin-left: 2rem;
+    margin-top: 1rem;
+    border-left: 2px solid var(--eggplant);
+    padding-left: 1rem;
+}
+
+.subtask-card {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.task-filters {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.show-completed {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.task-actions {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
+}
+
+.add-subtask-btn {
+    background: none;
+    border: none;
+    color: var(--eggplant);
+    padding: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.add-subtask-btn:hover {
+    color: var(--dark-purple);
+}
 
 @media (max-width: 768px) {
     .project-content {

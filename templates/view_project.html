@@ -46,19 +46,29 @@
             <section class="tasks-section">
                 <div class="section-header">
                     <h2>Tasks</h2>
-                    <button class="btn add-task-btn" onclick="showAddTaskModal()">
-                        <i class="fas fa-plus"></i> Add Task
-                    </button>
+                    <div class="task-filters">
+                        <label class="show-completed">
+                            <input type="checkbox" id="showCompleted"> Show Completed
+                        </label>
+                        <button class="btn add-task-btn" onclick="showAddTaskModal()">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
                 </div>
                 <div class="tasks-container">
                     {% if project.tasks %}
-                        {% for task in project.tasks %}
-                        <div class="task-card">
+                        {% for task in project.tasks if not task.parent_id %}
+                        <div class="task-card {% if task.is_completed %}completed{% endif %}" data-task-id="{{ task.id }}">
                             <div class="task-header">
-                                <h3>{{ task.title }}</h3>
+                                <div class="task-title-group">
+                                    <input type="checkbox" class="task-checkbox" 
+                                           {% if task.is_completed %}checked{% endif %}
+                                           onchange="toggleTaskCompletion({{ task.id }})">
+                                    <h3>{{ task.title }}</h3>
+                                </div>
                                 <span class="task-status {{ task.status }}">{{ task.status }}</span>
                             </div>
-                            <p>{{ task.description }}</p>
+                            <p class="task-description">{{ task.description }}</p>
                             {% if task.assigned_to %}
                             <div class="task-assignee">
                                 Assigned to: {{ task.assigned_to.username }}
@@ -69,6 +79,31 @@
                                 Due: {{ task.due_date.strftime('%Y-%m-%d') }}
                             </div>
                             {% endif %}
+                            
+                            <!-- Subtasks -->
+                            {% if task.subtasks.count() > 0 %}
+                            <div class="subtasks-container">
+                                {% for subtask in task.subtasks %}
+                                <div class="subtask-card {% if subtask.is_completed %}completed{% endif %}" data-task-id="{{ subtask.id }}">
+                                    <div class="subtask-header">
+                                        <div class="task-title-group">
+                                            <input type="checkbox" class="task-checkbox" 
+                                                   {% if subtask.is_completed %}checked{% endif %}
+                                                   onchange="toggleTaskCompletion({{ subtask.id }})">
+                                            <h4>{{ subtask.title }}</h4>
+                                        </div>
+                                        <span class="task-status {{ subtask.status }}">{{ subtask.status }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions">
+                                <button type="button" class="btn add-subtask-btn" onclick="handleSubtaskClick({{ task.id }}, '{{ task.title|e }}')">
+                                    <i class="fas fa-plus"></i> Add Subtask
+                                </button>
+                            </div>
                         </div>
                         {% endfor %}
                     {% else %}
@@ -157,27 +192,153 @@
     </div>
 </div>
 
+<!-- Add Subtask Modal -->
+<div id="subtaskModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Subtask to: <span id="parentTaskTitle"></span></h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="subtaskForm">
+                <input type="hidden" id="parentTaskId" name="parent_id">
+                <div class="form-group">
+                    <label for="subtaskTitle">Title</label>
+                    <input type="text" id="subtaskTitle" name="title" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="subtaskDescription">Description</label>
+                    <textarea id="subtaskDescription" name="description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="subtaskStatus">Status</label>
+                    <select id="subtaskStatus" name="status" class="form-control">
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn submit-btn">Add Subtask</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const projectId = {{ project.id }};  // Make project ID available to JS
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Show add task modal
+    const addTaskModal = document.getElementById('addTaskModal');
+    const subtaskModal = document.getElementById('subtaskModal');
+    const addTaskForm = document.getElementById('addTaskForm');
+    const subtaskForm = document.getElementById('subtaskForm');
+    const parentTaskTitle = document.getElementById('parentTaskTitle');
+    
+    // Add Task Modal handler
     window.showAddTaskModal = function() {
-        const modal = document.getElementById('addTaskModal');
-        modal.style.display = 'block';
-    }
+        addTaskModal.style.display = 'block';
+    };
 
-    // Close modal when clicking the X button
+    // Handle showing the subtask modal
+    window.handleSubtaskClick = function(taskId, taskTitle) {
+        document.getElementById('parentTaskId').value = taskId;
+        parentTaskTitle.textContent = taskTitle;
+        subtaskModal.style.display = 'block';
+    };
+
+    // Handle main task form submission
+    addTaskForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred while saving');
+        });
+    });
+
+    // Handle subtask form submission
+    subtaskForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch(`/project/${projectId}/add_task`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding subtask: ' + error.message);
+        });
+    });
+
+    // Close modal handlers
     document.querySelectorAll('.close-modal').forEach(button => {
         button.addEventListener('click', function() {
             this.closest('.modal').style.display = 'none';
         });
     });
 
-    // Close modal when clicking outside
     window.addEventListener('click', function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';
         }
     });
 });
+
+// Task completion toggle function
+function toggleTaskCompletion(taskId) {
+    fetch(`/api/tasks/${taskId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+            taskCard.classList.toggle('completed');
+            
+            // Also toggle the checkbox
+            const checkbox = taskCard.querySelector('.task-checkbox');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+    });
+}
 </script>
 {% endblock %} 

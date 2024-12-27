@@ -61,15 +61,18 @@ class Task(db.Model):
     description = db.Column(db.Text)
     status = db.Column(db.String(20), default='open')  # open, in_progress, completed, blocked
     priority = db.Column(db.String(20), default='medium')  # low, medium, high
+    is_completed = db.Column(db.Boolean, default=False)  
     due_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # Foreign Keys
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
     assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
     # Relationships
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
     created_by = db.relationship('User', foreign_keys=[created_by_id])
+    subtasks = db.relationship('Task', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
