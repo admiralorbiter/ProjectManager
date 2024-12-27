@@ -94,7 +94,18 @@
                                                onchange="toggleTaskCompletion({{ subtask.id }})">
                                         <h4>
                                             {{ subtask.title }}
-                                            <button type="button" class="add-subtask-btn" onclick="handleSubtaskClick({{ subtask.id }}, '{{ subtask.title|e }}')">+</button>
+                                            <div class="subtask-actions">
+                                                {% if subtask.assigned_to %}
+                                                    <span class="subtask-assignee">@{{ subtask.assigned_to.username }}</span>
+                                                    <button type="button" class="quick-assign-btn" onclick="showQuickAssign({{ subtask.id }}, event)">
+                                                        <i class="fas fa-user-edit"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" class="quick-assign-btn" onclick="showQuickAssign({{ subtask.id }}, event)">
+                                                        <i class="fas fa-user-plus"></i> Assign
+                                                    </button>
+                                                {% endif %}
+                                            </div>
                                         </h4>
                                     </div>
                                     <span class="task-status {{ subtask.status }}">{{ subtask.status }}</span>
@@ -215,6 +226,21 @@
                     <textarea id="subtaskDescription" name="description" class="form-control"></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="assignedTo">Assign To</label>
+                    <input type="text" 
+                           id="assignedTo" 
+                           name="assigned_to" 
+                           class="form-control" 
+                           list="teamMembers"
+                           placeholder="Type username to assign...">
+                    <datalist id="teamMembers">
+                        {% for member in project.members %}
+                            <option value="{{ member.username }}">
+                        {% endfor %}
+                        <option value="{{ project.owner.username }}">
+                    </datalist>
+                </div>
+                <div class="form-group">
                     <label for="subtaskStatus">Status</label>
                     <select id="subtaskStatus" name="status" class="form-control">
                         <option value="open">Open</option>
@@ -230,18 +256,35 @@
     </div>
 </div>
 
-<script>
-    const projectId = {{ project.id }};  // Make project ID available to JS
-</script>
+<!-- Quick Assign Dropdown -->
+<div id="quickAssignDropdown" class="quick-assign-dropdown">
+    <div class="quick-assign-search">
+        <input type="text" id="quickAssignSearch" placeholder="Search team member...">
+    </div>
+    <div class="quick-assign-list">
+        {% for member in project.members %}
+        <div class="quick-assign-item" onclick="assignUser(currentTaskId, '{{ member.username }}')">
+            <span class="member-initial">{{ member.username[0]|upper }}</span>
+            <span class="member-name">{{ member.username }}</span>
+        </div>
+        {% endfor %}
+        <div class="quick-assign-item" onclick="assignUser(currentTaskId, '{{ project.owner.username }}')">
+            <span class="member-initial">{{ project.owner.username[0]|upper }}</span>
+            <span class="member-name">{{ project.owner.username }}</span>
+        </div>
+    </div>
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    const projectId = {{ project.id }};  // Make project ID available to JS
+    let currentTaskId = null;
+    
+    // Initialize DOM elements
     const addTaskModal = document.getElementById('addTaskModal');
     const subtaskModal = document.getElementById('subtaskModal');
-    const addTaskForm = document.getElementById('addTaskForm');
-    const subtaskForm = document.getElementById('subtaskForm');
-    const parentTaskTitle = document.getElementById('parentTaskTitle');
-    
+    const quickAssignDropdown = document.getElementById('quickAssignDropdown');
+    const quickAssignSearch = document.getElementById('quickAssignSearch');
+
     // Add Task Modal handler
     window.showAddTaskModal = function() {
         addTaskModal.style.display = 'block';
@@ -250,38 +293,167 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle showing the subtask modal
     window.handleSubtaskClick = function(taskId, taskTitle) {
         document.getElementById('parentTaskId').value = taskId;
-        parentTaskTitle.textContent = taskTitle;
+        document.getElementById('parentTaskTitle').textContent = taskTitle;
         subtaskModal.style.display = 'block';
     };
 
-    // Handle main task form submission
-    addTaskForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
+    // Quick Assign handlers
+    window.showQuickAssign = function(taskId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        currentTaskId = taskId;
+        const button = event.currentTarget;
+        const rect = button.getBoundingClientRect();
+        
+        quickAssignDropdown.style.display = 'block';
+        quickAssignDropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
+        quickAssignDropdown.style.left = `${rect.left + window.scrollX}px`;
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', closeQuickAssign);
+    };
 
-        fetch(this.action, {
+    function closeQuickAssign(e) {
+        if (!quickAssignDropdown.contains(e.target) && !e.target.classList.contains('quick-assign-btn')) {
+            quickAssignDropdown.style.display = 'none';
+            document.removeEventListener('click', closeQuickAssign);
+        }
+    }
+
+    window.assignUser = function(taskId, username) {
+        fetch(`/api/tasks/${taskId}/assign`, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
             } else {
-                alert('Error: ' + (data.error || 'Unknown error occurred'));
+                throw new Error(data.error || 'Unknown error occurred');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error occurred while saving');
+            alert('Error assigning user: ' + error.message);
         });
+
+        quickAssignDropdown.style.display = 'none';
+    };
+
+    // Task completion toggle function
+    window.toggleTaskCompletion = function(taskId) {
+        fetch(`/api/tasks/${taskId}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+                taskCard.classList.toggle('completed');
+                
+                // Also toggle the checkbox
+                const checkbox = taskCard.querySelector('.task-checkbox');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+            }
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const addTaskForm = document.getElementById('addTaskForm');
+        const subtaskForm = document.getElementById('subtaskForm');
+
+        // Handle main task form submission
+        if (addTaskForm) {
+            addTaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error occurred'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error occurred while saving');
+                });
+            });
+        }
+
+        // Handle subtask form submission
+        if (subtaskForm) {
+            subtaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                // Get the username and convert it to user_id if needed
+                const assignedToUsername = formData.get('assigned_to');
+                if (assignedToUsername) {
+                    // You'll need to add an endpoint to handle username lookup
+                    fetch(`/api/users/lookup/${assignedToUsername}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.user_id) {
+                                formData.set('assigned_to_id', data.user_id);
+                            }
+                            submitSubtask(formData);
+                        });
+                } else {
+                    submitSubtask(formData);
+                }
+            });
+        }
+
+        // Close modal handlers
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        // Quick assign search functionality
+        if (quickAssignSearch) {
+            quickAssignSearch.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.quick-assign-item');
+                
+                items.forEach(item => {
+                    const username = item.querySelector('.member-name').textContent.toLowerCase();
+                    item.style.display = username.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+        }
     });
 
-    // Handle subtask form submission
-    subtaskForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-
+    function submitSubtask(formData) {
         fetch(`/project/${projectId}/add_task`, {
             method: 'POST',
             body: formData,
@@ -306,43 +478,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Error adding subtask: ' + error.message);
         });
-    });
-
-    // Close modal handlers
-    document.querySelectorAll('.close-modal').forEach(button => {
-        button.addEventListener('click', function() {
-            this.closest('.modal').style.display = 'none';
-        });
-    });
-
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    });
-});
-
-// Task completion toggle function
-function toggleTaskCompletion(taskId) {
-    fetch(`/api/tasks/${taskId}/toggle`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
-            taskCard.classList.toggle('completed');
-            
-            // Also toggle the checkbox
-            const checkbox = taskCard.querySelector('.task-checkbox');
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-            }
-        }
-    });
-}
+    }
 </script>
 {% endblock %} 

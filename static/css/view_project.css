@@ -280,6 +280,20 @@
     display: none;
 }
 
+.subtask-assignee {
+    font-size: 0.8rem;
+    color: var(--eggplant);
+    margin-left: 0.5rem;
+    font-weight: normal;
+}
+
+.subtask-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
 @media (max-width: 768px) {
     .project-content {
         grid-template-columns: 1fr;
@@ -288,4 +302,68 @@
     .sidebar {
         position: static;
     }
+} 
+
+.subtask-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.quick-assign-btn {
+    background: none;
+    border: none;
+    color: var(--eggplant);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.quick-assign-btn:hover {
+    opacity: 1;
+    background-color: rgba(55, 37, 73, 0.1);
+}
+
+.quick-assign-dropdown {
+    display: none;
+    position: absolute;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 200px;
+    z-index: 1000;
+}
+
+.quick-assign-search {
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.quick-assign-search input {
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.quick-assign-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.quick-assign-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.quick-assign-item:hover {
+    background-color: rgba(55, 37, 73, 0.1);
 } 

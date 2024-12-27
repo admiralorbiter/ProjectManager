@@ -192,3 +192,40 @@ def init_routes(app):
         db.session.commit()
         
         return jsonify({'success': True, 'is_completed': task.is_completed})
+
+    @app.route('/api/users/lookup/<username>')
+    @login_required
+    def lookup_user(username):
+        user = User.query.filter_by(username=username).first()
+        if user:
+            return jsonify({'user_id': user.id})
+        return jsonify({'error': 'User not found'}), 404
+
+    @app.route('/api/tasks/<int:task_id>/assign', methods=['POST'])
+    @login_required
+    def assign_task(task_id):
+        try:
+            task = Task.query.get_or_404(task_id)
+            project = task.project
+            
+            # Check permissions
+            if project.owner_id != current_user.id and current_user not in project.members:
+                return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+            
+            data = request.get_json()
+            username = data.get('username')
+            
+            if not username:
+                return jsonify({'success': False, 'error': 'Username is required'}), 400
+            
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                return jsonify({'success': False, 'error': 'User not found'}), 404
+            
+            task.assigned_to_id = user.id
+            db.session.commit()
+            
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
