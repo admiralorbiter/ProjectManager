@@ -129,9 +129,9 @@
 
 .task-card {
     background-color: white;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: opacity 0.3s ease;
 }
@@ -144,7 +144,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .task-status {
@@ -161,7 +161,19 @@
 .task-title-group {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.task-title-group h3,
+.task-title-group h4 {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .task-checkbox {
@@ -172,16 +184,48 @@
 
 .subtasks-container {
     margin-left: 2rem;
-    margin-top: 1rem;
     border-left: 2px solid var(--eggplant);
     padding-left: 1rem;
+    margin-top: 0.25rem;
 }
 
 .subtask-card {
     background-color: #f8f9fa;
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.subtask-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    margin: 0;
+}
+
+.subtask-header h4 {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subtask-description {
+    display: none;
+}
+
+.subtask-card:hover .subtask-description {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
 }
 
 .task-filters {
@@ -198,9 +242,7 @@
 }
 
 .task-actions {
-    margin-top: 1rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #eee;
+    display: none;
 }
 
 .add-subtask-btn {
@@ -208,13 +250,34 @@
     border: none;
     color: var(--eggplant);
     padding: 0;
-    font-size: 0.9rem;
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1;
     cursor: pointer;
-    transition: color 0.3s ease;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
 }
 
 .add-subtask-btn:hover {
-    color: var(--dark-purple);
+    opacity: 1;
+}
+
+.task-description {
+    display: none;
+}
+
+.task-card:hover .task-description,
+.task-card:hover .task-assignee,
+.task-card:hover .task-due-date {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.task-assignee,
+.task-due-date {
+    display: none;
 }
 
 @media (max-width: 768px) {

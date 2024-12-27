@@ -64,7 +64,10 @@
                                     <input type="checkbox" class="task-checkbox" 
                                            {% if task.is_completed %}checked{% endif %}
                                            onchange="toggleTaskCompletion({{ task.id }})">
-                                    <h3>{{ task.title }}</h3>
+                                    <h3>
+                                        {{ task.title }}
+                                        <button type="button" class="add-subtask-btn" onclick="handleSubtaskClick({{ task.id }}, '{{ task.title|e }}')">+</button>
+                                    </h3>
                                 </div>
                                 <span class="task-status {{ task.status }}">{{ task.status }}</span>
                             </div>
@@ -86,14 +89,15 @@
                                 {% for subtask in task.subtasks %}
                                 <div class="subtask-card {% if subtask.is_completed %}completed{% endif %}" data-task-id="{{ subtask.id }}">
                                     <div class="subtask-header">
-                                        <div class="task-title-group">
-                                            <input type="checkbox" class="task-checkbox" 
-                                                   {% if subtask.is_completed %}checked{% endif %}
-                                                   onchange="toggleTaskCompletion({{ subtask.id }})">
-                                            <h4>{{ subtask.title }}</h4>
-                                        </div>
-                                        <span class="task-status {{ subtask.status }}">{{ subtask.status }}</span>
+                                        <input type="checkbox" class="task-checkbox" 
+                                               {% if subtask.is_completed %}checked{% endif %}
+                                               onchange="toggleTaskCompletion({{ subtask.id }})">
+                                        <h4>
+                                            {{ subtask.title }}
+                                            <button type="button" class="add-subtask-btn" onclick="handleSubtaskClick({{ subtask.id }}, '{{ subtask.title|e }}')">+</button>
+                                        </h4>
                                     </div>
+                                    <span class="task-status {{ subtask.status }}">{{ subtask.status }}</span>
                                 </div>
                                 {% endfor %}
                             </div>
