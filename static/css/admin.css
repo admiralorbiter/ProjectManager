@@ -319,3 +319,17 @@
     border-color: var(--dark-purple);
     box-shadow: 0 0 0 2px rgba(55, 37, 73, 0.1);
 } 
+
+/* Password form specific styles */
+.password-form input[type="password"] {
+    padding-right: 2.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Add some space between password fields */
+#passwordForm .form-group + .form-group {
+    margin-top: 1rem;
+} 

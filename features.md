@@ -42,7 +42,7 @@
     - [x] Create User
     - [x] Edit User
     - [x] Delete User
-    - [ ] Change User Password
+    - [x] Change User Password
 
 ## UI/UX Features
 - [ ] Filtering and Searching

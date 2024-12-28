@@ -490,3 +490,32 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/admin/users/<username>/change-password', methods=['POST'])
+    @login_required
+    def admin_change_password(username):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        if username == current_user.username:
+            return jsonify({'success': False, 'error': 'Use profile settings to change your own password'}), 400
+        
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        try:
+            data = request.get_json()
+            new_password = data.get('new_password')
+            
+            if not new_password or len(new_password) < 6:
+                return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+            
+            user.password_hash = generate_password_hash(new_password)
+            db.session.commit()
+            
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
