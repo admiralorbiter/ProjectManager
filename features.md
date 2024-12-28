@@ -22,7 +22,7 @@
     - [x] Task Status Tracking (Open, In Progress, Completed, Blocked)
     - [x] Task Assignment System
     - [x] Quick Assign Feature with Search
-    - [x] Task Completion Toggle
+    - [ ] Task Completion Toggle
     - [x] Due Date Management
     - [ ] Edit Task
     - [ ] Delete Task
@@ -30,7 +30,7 @@
 - [ ] User Profile
     - [x] User Profile Page
     - [ ] User Profile Edit
-    - [ ] View Assigned Tasks
+    - [x] View Assigned Tasks
 
 
 ## Admin Features

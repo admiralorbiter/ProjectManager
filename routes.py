@@ -144,28 +144,18 @@ def init_routes(app):
             description = request.form.get('description')
             status = request.form.get('status', 'open')
             parent_id = request.form.get('parent_id')
-            due_date_str = request.form.get('due_date')
             
             # Validate required fields
             if not title:
                 return jsonify({'success': False, 'error': 'Title is required'}), 400
             
-            # Convert due date if provided
-            due_date = None
-            if due_date_str:
-                try:
-                    due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
-                except ValueError:
-                    return jsonify({'success': False, 'error': 'Invalid date format'}), 400
-            
-            # Create new task
+            # Create new task (removed assigned_to_id and due_date)
             new_task = Task(
                 title=title,
                 description=description,
                 status=status,
                 project_id=project_id,
                 parent_id=parent_id if parent_id else None,
-                due_date=due_date,
                 created_by_id=current_user.id
             )
             
@@ -176,7 +166,7 @@ def init_routes(app):
             
         except Exception as e:
             db.session.rollback()
-            print(f"Error adding task: {str(e)}")  # For debugging
+            print(f"Error adding task: {str(e)}")
             return jsonify({'success': False, 'error': 'Server error occurred'}), 500
 
     @app.route('/api/tasks/<int:task_id>/toggle', methods=['POST'])
@@ -235,8 +225,11 @@ def init_routes(app):
     def user_profile(username):
         user = User.query.filter_by(username=username).first_or_404()
         
-        # Get tasks assigned to this user
-        assigned_tasks = Task.query.filter_by(assigned_to_id=user.id).all()
+        # Update this line to get tasks assigned to this user
+        assigned_tasks = Task.query.filter_by(assigned_to_id=user.id)\
+            .join(Project)\
+            .order_by(Task.due_date.asc())\
+            .all()
         
         # If user is admin or viewing their own profile
         if current_user.is_administrator() or current_user.username == username:
