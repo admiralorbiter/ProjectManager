@@ -43,8 +43,7 @@
     - [x] Change User Password
 
 ## Technical Features
-- [ ] Unit Testing
-
+- [X] Unit Testing 75%+ Coverage
 
 ## Documentation
 - [x] Project Documentation
