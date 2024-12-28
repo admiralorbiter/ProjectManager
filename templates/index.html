@@ -1,11 +1,90 @@
 {% extends "base.html" %}
+{% from 'components/project_card.html' import project_card %}
 
-{% block title %}Project Manager{% endblock %}
+{% block title %}Projects Overview{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/project.css') }}">
 {% endblock %}
 
 {% block content %}
-<h1>Project Manager</h1>
+<div class="projects-grid">
+    {# Project Manager #}
+    {{ project_card(
+        title="Project Manager",
+        description="Spring Goal: Use to Manage projects throughout the spring",
+        links=[
+            {"type": "link", "url": "http://jlane.dev", "text": "jlane.dev"},
+            {"type": "link", "url": "https://github.com/admiralorbiter/ProjectManager", "text": "Github Link"},
+            {"type": "license", "text": "Unlicensed"},
+            {"type": "release", "text": "Alpha Release"}
+        ],
+        features=[
+            {
+                "title": "Public Project Overview",
+                "description": "Project gallery for showcasing work. [Planned]"
+            },
+            {
+                "title": "User Authentication System",
+                "description": "Role-based user management with admin controls. Password change and user creation features."
+            },
+            {
+                "title": "Project Management",
+                "description": "Create, edit, and track project status. Prioritize tasks and set due dates. Support for external project URLs and feature lists."
+            },
+            {
+                "title": "Task Management",
+                "description": "Hierarchical tasks with subtasks and status tracking. Task assignment with quick search and due date management."
+            }
+        ],
+        planned_features="CSV user import, email-based password resets, submission and feedback systems, and a job/intern board."
+    ) }}
+
+    {# Data Deck Project Card #}
+    {{ project_card(
+        title="Data Deck",
+        description="Spring Goal: Rewrite and Improvements Ready for Release",
+        links=[
+            {"type": "link", "url": "http://datadeck.dev", "text": "datadeck.dev"},
+            {"type": "link", "url": "https://github.com/admiralorbiter/ProjectManager", "text": "Github Link"},
+            {"type": "license", "text": "Unlicensed"}
+        ],
+        features=[
+            {
+                "title": "Public Dashboard",
+                "description": "Showcases data visualizations and insights."
+            },
+            {
+                "title": "User Management",
+                "description": "Role-based accounts for admins, teachers, and students. User creation with fictional character profiles."
+            },
+            {
+                "title": "Data Visualization Tools",
+                "description": "Upload, create, and display data visualizations. Organize visualizations into categories for clarity."
+            },
+            {
+                "title": "Engagement Features",
+                "description": "Commenting and 'like' system for visualizations. Peer interaction to foster collaboration and feedback."
+            },
+            {
+                "title": "Project Management Tools",
+                "description": "Track project progress, milestones, and deadlines."
+            },
+            {
+                "title": "Admin Controls",
+                "description": "Manage user accounts, reset passwords, and monitor activity."
+            },
+            {
+                "title": "Technical Features",
+                "description": "SQLite database with Flask back end. Hosted on PythonAnywhere for reliability and scalability."
+            },
+            {
+                "title": "Documentation",
+                "description": "Includes setup instructions, API usage, and developer notes."
+            }
+        ],
+        planned_features="CSV-based user import, submission review system, and expanded analytics tools."
+    ) }}
+</div>
 {% endblock %}
