@@ -47,7 +47,6 @@ PROJECTMANAGER/
 ├── config.py
 ├── conftest.py
 ├── create_admin.py
-├── create_jonlane.py
 ├── features.md
 ├── forms.py
 ├── models.py
