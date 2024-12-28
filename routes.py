@@ -349,8 +349,12 @@ def init_routes(app):
         return jsonify({
             'success': True,
             'user': {
+                'username': user.username,
                 'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'role': user.role,
+                'is_admin': user.is_admin,
                 'is_active': user.is_active
             }
         })
@@ -375,13 +379,24 @@ def init_routes(app):
             if not data.get('email') or '@' not in data['email']:
                 return jsonify({'success': False, 'error': 'Invalid email format'}), 400
             
+            # Check if new username is taken by another user
+            if data.get('username') != username:
+                existing_user = User.query.filter_by(username=data['username']).first()
+                if existing_user:
+                    return jsonify({'success': False, 'error': 'Username already in use'}), 400
+            
             # Check if email is taken by another user
             existing_user = User.query.filter_by(email=data['email']).first()
             if existing_user and existing_user.username != username:
                 return jsonify({'success': False, 'error': 'Email already in use'}), 400
             
+            # Update all user fields
+            user.username = data['username']
             user.email = data['email']
+            user.first_name = data.get('first_name')
+            user.last_name = data.get('last_name')
             user.role = data['role']
+            user.is_admin = data['is_admin']
             user.is_active = data['is_active']
             
             db.session.commit()

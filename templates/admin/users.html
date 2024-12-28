@@ -80,14 +80,33 @@
         <h2><i class="fas fa-user-edit"></i> Edit User</h2>
         <form id="editUserForm" method="POST">
             <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required class="form-control">
+            </div>
+            <div class="form-group">
                 <label>Email</label>
                 <input type="email" name="email" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="first_name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="last_name" class="form-control">
             </div>
             <div class="form-group">
                 <label>Role</label>
                 <select name="role" class="form-control">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Admin Status</label>
+                <select name="is_admin" class="form-control">
+                    <option value="false">Not Admin</option>
+                    <option value="true">Admin</option>
                 </select>
             </div>
             <div class="form-group">
@@ -141,8 +160,12 @@ function editUser(username) {
         .then(data => {
             if (data.success) {
                 const form = document.getElementById('editUserForm');
+                form.username.value = data.user.username;
                 form.email.value = data.user.email;
+                form.first_name.value = data.user.first_name || '';
+                form.last_name.value = data.user.last_name || '';
                 form.role.value = data.user.role;
+                form.is_admin.value = data.user.is_admin.toString();
                 form.is_active.value = data.user.is_active.toString();
                 modal.style.display = 'block';
             } else {
@@ -165,8 +188,12 @@ document.getElementById('editUserForm').onsubmit = function(e) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+            username: formData.get('username'),
             email: formData.get('email'),
+            first_name: formData.get('first_name'),
+            last_name: formData.get('last_name'),
             role: formData.get('role'),
+            is_admin: formData.get('is_admin') === 'true',
             is_active: formData.get('is_active') === 'true'
         })
     })

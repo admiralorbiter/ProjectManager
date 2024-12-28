@@ -1,8 +1,5 @@
 # Features
 
-## Misc List
-- [ ] Edit User should align between admin edit and user edit
-
 ## Core Features
 
 - [x] User Authentication System
