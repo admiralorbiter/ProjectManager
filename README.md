@@ -159,3 +159,59 @@ python create_admin.py
 Visit http://127.0.0.1:5000/ in your browser.
 
 Note: For production use, ensure you set the appropriate environment variables, turn off DEBUG in settings.py, and secure your secret keys.
+
+### Testing
+
+The project uses pytest for testing. The test suite includes:
+- Unit tests for models
+- Integration tests for routes
+- Authentication testing
+- Database operations testing
+
+#### Running Tests
+
+1. **Setup Test Environment**
+```bash
+pip install pytest
+pip install pytest-cov  # for coverage reports
+```
+
+2. **Run All Tests**
+```bash
+pytest
+```
+
+3. **Run Tests with Coverage Report**
+```bash
+pytest --cov=.
+```
+
+4. **Run Specific Test Files**
+```bash
+pytest tests/test_routes.py  # Run route tests
+pytest tests/test_models.py  # Run model tests
+```
+
+#### Test Structure
+- `conftest.py`: Contains pytest fixtures and test configuration
+- `tests/test_routes.py`: Tests for route functionality and API endpoints
+- `tests/test_models.py`: Tests for database models and relationships
+
+#### Key Testing Features
+- Uses in-memory SQLite database for testing
+- Separate test configuration in `config.py`
+- Fixtures for common test scenarios:
+  - Test users (admin and regular)
+  - Test projects
+  - Test tasks
+- Comprehensive API endpoint testing
+- Database operation verification
+- Authentication and authorization testing
+
+#### Writing New Tests
+When adding new features, ensure to:
+1. Create corresponding test cases
+2. Use existing fixtures where applicable
+3. Follow the established pattern for similar functionality
+4. Include both positive and negative test cases
+5. Test edge cases and error conditions
