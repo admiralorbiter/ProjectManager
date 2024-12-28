@@ -447,13 +447,11 @@ def test_project_creation_invalid_date(client, test_admin_user, app):
             'description': 'Test Description',
             'status': 'active',
             'priority': 'medium',
-            'due_date': 'invalid-date'  # Invalid date format
+            'due_date': 'invalid-date'
         }, follow_redirects=True)
         
-        assert response.status_code == 200
-        # Verify project wasn't created
-        project = Project.query.filter_by(title='Test Project').first()
-        assert project is None
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Invalid date format'
 
 def test_project_view_nonexistent(client, test_admin_user, app):
     """Test viewing a non-existent project"""
@@ -620,7 +618,7 @@ def test_project_member_operations(client, test_admin_user, test_regular_user, t
         assert data['success'] == True
 
         # Verify assignment
-        updated_task = Task.query.get(task.id)
+        updated_task = db.session.get(Task, task.id)
         assert updated_task.assigned_to_id == test_regular_user.id
 
         # Test reassigning task to different user (instead of None)
@@ -632,7 +630,7 @@ def test_project_member_operations(client, test_admin_user, test_regular_user, t
         assert data['success'] == True
 
         # Verify reassignment
-        updated_task = Task.query.get(task.id)
+        updated_task = db.session.get(Task, task.id)
         assert updated_task.assigned_to_id == test_admin_user.id
 
 def test_task_operations_with_exceptions(client, test_admin_user, test_task, app):
@@ -664,7 +662,7 @@ def test_task_operations_with_exceptions(client, test_admin_user, test_task, app
         assert response.get_json()['success'] == True
 
         # Verify task was deleted
-        assert Task.query.get(test_task.id) is None
+        assert db.session.query(Task).filter_by(id=test_task.id).first() is None
 
 def test_admin_user_management(client, test_admin_user, test_regular_user, app):
     """Test admin user management functions"""
@@ -724,3 +722,139 @@ def test_error_handling(client, test_admin_user, app):
             'email': 'test@example.com'
         })
         assert response.status_code == 404 
+
+def test_project_creation_validation(client, test_admin_user, app):
+    """Test project creation with invalid data"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test missing title
+        response = client.post('/projects/create', data={
+            'description': 'Test Description',
+            'status': 'active'
+        })
+        assert response.status_code == 400
+
+        # Test invalid status
+        response = client.post('/projects/create', data={
+            'title': 'Test Project',
+            'description': 'Test Description',
+            'status': 'invalid_status'
+        })
+        assert response.status_code == 400
+
+        # Test invalid date format
+        response = client.post('/projects/create', data={
+            'title': 'Test Project',
+            'description': 'Test Description',
+            'due_date': 'invalid-date'
+        })
+        assert response.status_code == 400
+
+def test_task_creation_errors(client, test_admin_user, test_project, app):
+    """Test task creation error handling"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_project)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test missing title
+        response = client.post(f'/project/{test_project.id}/add_task', data={
+            'description': 'Test Description'
+        })
+        assert response.status_code == 400
+
+        # Test invalid project ID
+        response = client.post('/project/999/add_task', data={
+            'title': 'Test Task',
+            'description': 'Test Description'
+        })
+        assert response.status_code == 404
+
+def test_user_deletion_scenarios(client, test_admin_user, test_regular_user, test_project, test_task, app):
+    """Test various user deletion scenarios"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_regular_user)
+        db.session.add(test_project)
+        test_task.assigned_to = test_regular_user
+        db.session.add(test_task)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test self-deletion prevention
+        response = client.delete('/admin/users/admin/delete')
+        assert response.status_code == 400
+
+        # Test deleting user with assigned tasks
+        response = client.delete('/admin/users/user/delete')
+        assert response.status_code == 200
+        assert response.get_json()['success'] == True
+
+        # Verify task reassignment
+        updated_task = db.session.get(Task, test_task.id)
+        assert updated_task.assigned_to_id is None
+
+def test_task_operations_errors(client, test_admin_user, test_task, app):
+    """Test task operations error handling"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_task)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test editing with missing data
+        response = client.post(f'/api/tasks/{test_task.id}/edit', data={})
+        assert response.status_code == 400
+
+        # Test editing non-existent task
+        response = client.post('/api/tasks/999/edit', data={
+            'title': 'Updated Task'
+        })
+        assert response.status_code == 404
+
+        # Test deleting non-existent task
+        response = client.delete('/api/tasks/999/delete')
+        assert response.status_code == 404
+
+        # Test deleting task with subtasks
+        subtask = Task(
+            title='Subtask',
+            description='Subtask Description',
+            project=test_task.project,
+            created_by=test_admin_user,
+            parent_id=test_task.id
+        )
+        db.session.add(subtask)
+        db.session.commit()
+        subtask_id = subtask.id  # Store the ID before deletion
+
+        response = client.delete(f'/api/tasks/{test_task.id}/delete')
+        assert response.status_code == 200
+        
+        # Refresh the session and check if subtask exists
+        db.session.expire_all()
+        assert db.session.query(Task).filter_by(id=subtask_id).first() is None 

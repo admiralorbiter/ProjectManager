@@ -4,6 +4,7 @@ from forms import LoginForm
 from models import User, db, Project, Task
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
+import werkzeug.exceptions
 
 def init_routes(app):
     @app.route('/')
@@ -39,7 +40,6 @@ def init_routes(app):
     @app.route('/projects/create', methods=['GET', 'POST'])
     @login_required
     def create_project():
-        # Check if user is admin
         if not current_user.is_administrator():
             flash('Only administrators can create new projects.', 'error')
             return redirect(url_for('projects'))
@@ -48,37 +48,42 @@ def init_routes(app):
             title = request.form.get('title')
             description = request.form.get('description')
             status = request.form.get('status', 'active')
-            priority = request.form.get('priority', 'medium')
-            project_url = request.form.get('project_url')
-            features = request.form.getlist('features[]')
-            due_date_str = request.form.get('due_date')
             
-            # Convert date string to datetime if provided
-            due_date = None
-            if due_date_str:
-                try:
-                    due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
-                except ValueError:
-                    flash('Invalid date format', 'error')
-                    return redirect(url_for('create_project'))
+            if not title:
+                return jsonify({'error': 'Title is required'}), 400
             
-            project = Project(
-                title=title,
-                description=description,
-                status=status,
-                priority=priority,
-                project_url=project_url,
-                features=features,
-                due_date=due_date,
-                owner_id=current_user.id
-            )
+            if status not in Project.VALID_STATUSES:
+                return jsonify({'error': f'Invalid status. Must be one of: {", ".join(Project.VALID_STATUSES)}'}), 400
             
-            db.session.add(project)
-            db.session.commit()
+            try:
+                due_date = None
+                if due_date_str := request.form.get('due_date'):
+                    try:
+                        due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+                    except ValueError:
+                        return jsonify({'error': 'Invalid date format'}), 400
+                    
+                project = Project(
+                    title=title,
+                    description=description,
+                    status=status,
+                    priority=request.form.get('priority', 'medium'),
+                    project_url=request.form.get('project_url'),
+                    features=request.form.getlist('features[]'),
+                    due_date=due_date,
+                    owner_id=current_user.id
+                )
+                
+                db.session.add(project)
+                db.session.commit()
+                
+                flash('Project created successfully!', 'success')
+                return redirect(url_for('projects'))
             
-            flash('Project created successfully!', 'success')
-            return redirect(url_for('projects'))
-            
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'error': str(e)}), 500
+        
         # Get all users for member selection
         users = User.query.filter(User.id != current_user.id).all()
         return render_template('create_project.html', users=users) 
@@ -160,10 +165,11 @@ def init_routes(app):
             
             return jsonify({'success': True})
             
+        except werkzeug.exceptions.NotFound:
+            return jsonify({'error': 'Project not found'}), 404
         except Exception as e:
             db.session.rollback()
-            print(f"Error adding task: {str(e)}")
-            return jsonify({'success': False, 'error': 'Server error occurred'}), 500
+            return jsonify({'error': str(e)}), 500
 
     @app.route('/api/tasks/<int:task_id>/toggle', methods=['POST'])
     @login_required
@@ -461,14 +467,21 @@ def init_routes(app):
         if not current_user.is_administrator():
             return jsonify({'success': False, 'error': 'Unauthorized'}), 403
         
-        task = Task.query.get_or_404(task_id)
-        
         try:
-            task.title = request.form.get('title')
+            task = Task.query.get_or_404(task_id)
+            
+            # Validate required fields
+            title = request.form.get('title')
+            if not title:
+                return jsonify({'success': False, 'error': 'Title is required'}), 400
+            
+            task.title = title
             task.description = request.form.get('description')
             
             db.session.commit()
             return jsonify({'success': True})
+        except werkzeug.exceptions.NotFound:
+            return jsonify({'success': False, 'error': 'Task not found'}), 404
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500

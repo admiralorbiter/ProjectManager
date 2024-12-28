@@ -11,8 +11,7 @@ def app():
     flask_app.config.from_object(TestingConfig)
 
     with flask_app.app_context():
-        # Drop all tables first, then create them
-        db.drop_all()
+        # Create all tables in the in-memory database
         db.create_all()
         
         yield flask_app
