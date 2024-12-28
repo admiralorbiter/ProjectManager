@@ -27,13 +27,22 @@
     - [ ] Edit Task
     - [ ] Delete Task
 
+- [ ] User Profile
+    - [ ] User Profile Page
+    - [ ] View Assigned Tasks
+
+
+## Admin Features
+- [ ] Admin Dashboard
+- [ ] Admin User Management
+
 ## UI/UX Features
-- [] Filtering and Searching
-    - [] Search by Project Title and Description
-    - [] Filter by Project Status, Priority, and Due Date
+- [ ] Filtering and Searching
+    - [ ] Search by Project Title and Description
+    - [ ] Filter by Project Status, Priority, and Due Date
 
 ## Technical Features
-- [] Unit Testing
+- [ ] Unit Testing
 
 
 ## Documentation

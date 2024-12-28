@@ -21,7 +21,9 @@ def create_jonlane():
         new_admin = User(
             username=username,
             email=email,
-            password_hash=generate_password_hash(password)
+            password_hash=generate_password_hash(password),
+            is_admin=True,
+            role='admin'
         )
 
         db.session.add(new_admin)

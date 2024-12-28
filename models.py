@@ -25,6 +25,9 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(64))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), default='user')  # 'admin', 'user'
+    is_active = db.Column(db.Boolean, default=True)
     
     # Relationships
     owned_projects = db.relationship('Project', backref='owner', lazy=True)
@@ -32,6 +35,13 @@ class User(db.Model, UserMixin):
                                        secondary=project_users,
                                        backref=db.backref('members', lazy='dynamic'),
                                        lazy='dynamic')
+    
+    # Helper methods for role checking
+    def is_administrator(self):
+        return self.is_admin
+    
+    def has_role(self, role):
+        return self.role == role
 
 class Project(db.Model):
     __tablename__ = 'projects'
