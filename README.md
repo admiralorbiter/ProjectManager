@@ -1,9 +1,5 @@
 # ProjectManager: Documentation
 
-This document provides an overview of the **ProjectManager** application, outlines its project structure, core technologies, available features, known limitations, and possible future enhancements. It is designed to be easily copied and adapted as needed.
-
----
-
 ## Project Documentation
 
 ### 1. Project Overview
