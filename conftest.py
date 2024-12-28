@@ -11,10 +11,13 @@ def app():
     flask_app.config.from_object(TestingConfig)
 
     with flask_app.app_context():
-        # Create all tables
+        # Drop all tables first, then create them
+        db.drop_all()
         db.create_all()
+        
         yield flask_app
-        # Drop all tables
+
+        # Clean up after tests
         db.session.remove()
         db.drop_all()
 

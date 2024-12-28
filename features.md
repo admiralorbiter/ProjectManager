@@ -1,7 +1,8 @@
 # Features
 
 ## Core Features
-
+- [ ] Public Project Overview Page
+    - [ ] Public Project Gallery
 - [x] User Authentication System
     - [x] Admin/Role Based User Management
     - [x] Password Change
