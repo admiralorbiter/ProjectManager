@@ -33,22 +33,25 @@ def init_routes(app):
     @app.route('/projects')
     @login_required
     def projects():
-        # Get both owned projects and projects user is a member of
-        owned_projects = Project.query.filter_by(owner_id=current_user.id)
-        member_projects = current_user.member_of_projects
-        projects = owned_projects.union(member_projects).order_by(Project.created_at.desc()).all()
+        # Get all projects, ordered by creation date
+        projects = Project.query.order_by(Project.created_at.desc()).all()
         return render_template('projects.html', projects=projects)
 
     @app.route('/projects/create', methods=['GET', 'POST'])
     @login_required
     def create_project():
+        # Check if user is admin
+        if not current_user.is_administrator():
+            flash('Only administrators can create new projects.', 'error')
+            return redirect(url_for('projects'))
+
         if request.method == 'POST':
             title = request.form.get('title')
             description = request.form.get('description')
             status = request.form.get('status', 'active')
             priority = request.form.get('priority', 'medium')
             project_url = request.form.get('project_url')
-            features = request.form.getlist('features[]')  # Get list of features
+            features = request.form.getlist('features[]')
             due_date_str = request.form.get('due_date')
             
             # Convert date string to datetime if provided
@@ -85,12 +88,6 @@ def init_routes(app):
     @login_required
     def view_project(project_id):
         project = Project.query.get_or_404(project_id)
-        
-        # Check if user has access to this project
-        if project.owner_id != current_user.id and current_user not in project.members:
-            flash('You do not have access to this project.', 'error')
-            return redirect(url_for('projects'))
-        
         return render_template('view_project.html', project=project, project_id=project_id)
 
     @app.route('/projects/<int:project_id>/edit', methods=['GET', 'POST'])

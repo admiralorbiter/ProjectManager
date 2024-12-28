@@ -10,9 +10,11 @@
 <div class="projects-container">
     <div class="projects-header">
         <h1>My Projects</h1>
+        {% if current_user.is_administrator() %}
         <a href="{{ url_for('create_project') }}" class="btn create-project-btn">
             <i class="fas fa-plus"></i> New Project
         </a>
+        {% endif %}
     </div>
 
     <div class="projects-filters">
