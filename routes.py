@@ -422,3 +422,42 @@ def init_routes(app):
         
         flash('Password updated successfully.', 'success')
         return redirect(url_for('user_profile', username=username))
+
+    @app.route('/api/tasks/<int:task_id>/delete', methods=['DELETE'])
+    @login_required
+    def delete_task(task_id):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        
+        task = Task.query.get_or_404(task_id)
+        
+        try:
+            # Delete all subtasks first
+            Task.query.filter_by(parent_id=task_id).delete()
+            
+            # Delete the task
+            db.session.delete(task)
+            db.session.commit()
+            
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/api/tasks/<int:task_id>/edit', methods=['POST'])
+    @login_required
+    def edit_task(task_id):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        
+        task = Task.query.get_or_404(task_id)
+        
+        try:
+            task.title = request.form.get('title')
+            task.description = request.form.get('description')
+            
+            db.session.commit()
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500

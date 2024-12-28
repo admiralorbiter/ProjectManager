@@ -67,6 +67,16 @@
                                     <h3>
                                         {{ task.title }}
                                         <button type="button" class="add-subtask-btn" onclick="handleSubtaskClick({{ task.id }}, '{{ task.title|e }}')">+</button>
+                                        {% if current_user.is_administrator() %}
+                                        <div class="admin-task-actions">
+                                            <button type="button" class="task-action-btn edit" onclick="handleEditTask({{ task.id }}, '{{ task.title|e }}', '{{ task.description|e }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="task-action-btn delete" onclick="handleDeleteTask({{ task.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
                                     </h3>
                                 </div>
                                 <span class="task-status {{ task.status }}">{{ task.status }}</span>
@@ -264,6 +274,32 @@
     </div>
 </div>
 
+<!-- Add this new modal for editing tasks -->
+<div id="editTaskModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Task</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId" name="task_id">
+                <div class="form-group">
+                    <label for="editTaskTitle">Title</label>
+                    <input type="text" id="editTaskTitle" name="title" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Description</label>
+                    <textarea id="editTaskDescription" name="description" class="form-control"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn submit-btn">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     const projectId = {{ project.id }};  // Make project ID available to JS
     let currentTaskId = null;
@@ -438,6 +474,32 @@
                 });
             });
         }
+
+        const editTaskForm = document.getElementById('editTaskForm');
+        if (editTaskForm) {
+            editTaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const taskId = document.getElementById('editTaskId').value;
+                const formData = new FormData(this);
+
+                fetch(`/api/tasks/${taskId}/edit`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error occurred'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error occurred while saving');
+                });
+            });
+        }
     });
 
     function submitSubtask(formData) {
@@ -466,5 +528,33 @@
             alert('Error adding subtask: ' + error.message);
         });
     }
+
+    window.handleEditTask = function(taskId, title, description) {
+        const editModal = document.getElementById('editTaskModal');
+        document.getElementById('editTaskId').value = taskId;
+        document.getElementById('editTaskTitle').value = title;
+        document.getElementById('editTaskDescription').value = description;
+        editModal.style.display = 'block';
+    };
+
+    window.handleDeleteTask = function(taskId) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            fetch(`/api/tasks/${taskId}/delete`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error occurred while deleting');
+            });
+        }
+    };
 </script>
 {% endblock %} 
