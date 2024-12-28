@@ -59,6 +59,8 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # New fields
+    github_url = db.Column(db.String(500))
+    document_url = db.Column(db.String(500))
     features = db.Column(db.JSON, default=list)
     project_url = db.Column(db.String(500))
     

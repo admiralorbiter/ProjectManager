@@ -150,12 +150,24 @@
 
         <div class="sidebar">
             <section class="project-info">
-                {% if project.project_url %}
+                {% if project.project_url or project.github_url or project.document_url %}
                 <div class="info-item">
-                    <h3>Project Link</h3>
+                    <h3>Project Links</h3>
+                    {% if project.project_url %}
                     <a href="{{ project.project_url }}" target="_blank" rel="noopener noreferrer">
                         <i class="fas fa-link"></i> View Project
                     </a>
+                    {% endif %}
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-github"></i> GitHub Repository
+                    </a>
+                    {% endif %}
+                    {% if project.document_url %}
+                    <a href="{{ project.document_url }}" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-file-alt"></i> Documentation
+                    </a>
+                    {% endif %}
                 </div>
                 {% endif %}
 

@@ -69,6 +69,8 @@ def init_routes(app):
                     status=status,
                     priority=request.form.get('priority', 'medium'),
                     project_url=request.form.get('project_url'),
+                    github_url=request.form.get('github_url'),
+                    document_url=request.form.get('document_url'),
                     features=request.form.getlist('features[]'),
                     due_date=due_date,
                     owner_id=current_user.id
@@ -110,6 +112,8 @@ def init_routes(app):
             project.status = request.form.get('status', 'active')
             project.priority = request.form.get('priority', 'medium')
             project.project_url = request.form.get('project_url')
+            project.github_url = request.form.get('github_url')
+            project.document_url = request.form.get('document_url')
             project.features = request.form.getlist('features[]')
             
             due_date_str = request.form.get('due_date')
