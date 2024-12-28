@@ -104,6 +104,16 @@
                                                onchange="toggleTaskCompletion({{ subtask.id }})">
                                         <h4>
                                             {{ subtask.title }}
+                                            {% if current_user.is_administrator() %}
+                                            <div class="admin-task-actions">
+                                                <button type="button" class="task-action-btn edit" onclick="handleEditTask({{ subtask.id }}, '{{ subtask.title|e }}', '{{ subtask.description|e }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="task-action-btn delete" onclick="handleDeleteTask({{ subtask.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            {% endif %}
                                             <div class="subtask-actions">
                                                 {% if subtask.assigned_to %}
                                                     <span class="subtask-assignee">@{{ subtask.assigned_to.username }}</span>

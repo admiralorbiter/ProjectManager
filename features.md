@@ -24,8 +24,8 @@
     - [x] Quick Assign Feature with Search
     - [x] Task Completion Toggle
     - [x] Due Date Management
-    - [ ] Edit Task
-    - [ ] Delete Task
+    - [x] Edit Task
+    - [x] Delete Task
 
 - [ ] User Profile
     - [x] User Profile Page
