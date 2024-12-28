@@ -389,3 +389,31 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/profile/<username>/change-password', methods=['POST'])
+    @login_required
+    def change_password(username):
+        if current_user.username != username:
+            flash('You can only change your own password.', 'error')
+            return redirect(url_for('user_profile', username=username))
+        
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Verify current password
+        if not check_password_hash(current_user.password_hash, current_password):
+            flash('Current password is incorrect.', 'error')
+            return redirect(url_for('user_profile', username=username))
+        
+        # Verify new passwords match
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return redirect(url_for('user_profile', username=username))
+        
+        # Update password
+        current_user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        
+        flash('Password updated successfully.', 'success')
+        return redirect(url_for('user_profile', username=username))

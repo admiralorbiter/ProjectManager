@@ -4,8 +4,8 @@
 
 - [x] User Authentication System
     - [x] Admin/Role Based User Management
-    - [] Password Change + Reset
-    - [] User Creation
+    - [x] Password Change
+    - [x] User Creation
 
 - [x] Project Management
     - [x] Create/Edit Projects
@@ -35,11 +35,12 @@
 
 ## Admin Features
 - [ ] Admin Dashboard
-- [ ] Admin User Management
+- [x] Admin User Management
     - [x] View All Users
     - [x] Create User
-    - [ ] Edit User
+    - [x] Edit User
     - [x] Delete User
+    - [ ] Change User Password
 
 ## UI/UX Features
 - [ ] Filtering and Searching
@@ -64,5 +65,6 @@
 ## Future Features
 - [ ] Create User with just email (username will be the email) password will be generated and sent to the user
 - [ ] Create users with CSV Import
+- [ ] User Reset Password Via Email
 
 
