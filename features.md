@@ -22,7 +22,6 @@
     - [x] Task Status Tracking (Open, In Progress, Completed, Blocked)
     - [x] Task Assignment System
     - [x] Quick Assign Feature with Search
-        - [ ] Fix on the Add New Task Modal
     - [x] Task Completion Toggle
     - [x] Due Date Management
     - [ ] Edit Task
@@ -32,5 +31,20 @@
 - [] Filtering and Searching
     - [] Search by Project Title and Description
     - [] Filter by Project Status, Priority, and Due Date
+
+## Technical Features
+- [] Unit Testing
+
+
+## Documentation
+- [] Project Documentation
+    - [] Project Overview
+    - [] Project Structure
+    - [] Project Technologies
+    - [] Project Features
+    - [] Project Limitations
+    - [] Project Future Development
+- [] User Documentation
+    - [] User Guide
 
 

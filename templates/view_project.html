@@ -227,18 +227,27 @@
                 </div>
                 <div class="form-group">
                     <label for="assignedTo">Assign To</label>
-                    <input type="text" 
-                           id="assignedTo" 
-                           name="assigned_to" 
-                           class="form-control" 
-                           list="teamMembers"
-                           placeholder="Type username to assign...">
-                    <datalist id="teamMembers">
-                        {% for member in project.members %}
-                            <option value="{{ member.username }}">
-                        {% endfor %}
-                        <option value="{{ project.owner.username }}">
-                    </datalist>
+                    <div class="assign-input-container">
+                        <input type="text" 
+                               id="assignedTo" 
+                               name="assigned_to" 
+                               class="form-control"
+                               placeholder="Type username to assign...">
+                        <div class="quick-assign-dropdown" id="subtaskAssignDropdown">
+                            <div class="quick-assign-list">
+                                {% for member in project.members %}
+                                <div class="quick-assign-item" data-username="{{ member.username }}">
+                                    <span class="member-initial">{{ member.username[0]|upper }}</span>
+                                    <span class="member-name">{{ member.username }}</span>
+                                </div>
+                                {% endfor %}
+                                <div class="quick-assign-item" data-username="{{ project.owner.username }}">
+                                    <span class="member-initial">{{ project.owner.username[0]|upper }}</span>
+                                    <span class="member-name">{{ project.owner.username }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="subtaskStatus">Status</label>
@@ -449,6 +458,43 @@
                     const username = item.querySelector('.member-name').textContent.toLowerCase();
                     item.style.display = username.includes(searchTerm) ? 'flex' : 'none';
                 });
+            });
+        }
+
+        // Add subtask assign functionality
+        const assignedToInput = document.getElementById('assignedTo');
+        const subtaskAssignDropdown = document.getElementById('subtaskAssignDropdown');
+
+        if (assignedToInput && subtaskAssignDropdown) {
+            assignedToInput.addEventListener('focus', function() {
+                subtaskAssignDropdown.style.display = 'block';
+            });
+
+            assignedToInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const items = subtaskAssignDropdown.querySelectorAll('.quick-assign-item');
+                
+                items.forEach(item => {
+                    const username = item.dataset.username.toLowerCase();
+                    item.style.display = username.includes(searchTerm) ? 'flex' : 'none';
+                });
+                
+                subtaskAssignDropdown.style.display = 'block';
+            });
+
+            // Handle clicking on a quick assign item
+            subtaskAssignDropdown.querySelectorAll('.quick-assign-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    assignedToInput.value = this.dataset.username;
+                    subtaskAssignDropdown.style.display = 'none';
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!assignedToInput.contains(e.target) && !subtaskAssignDropdown.contains(e.target)) {
+                    subtaskAssignDropdown.style.display = 'none';
+                }
             });
         }
     });
