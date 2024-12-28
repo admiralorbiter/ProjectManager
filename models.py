@@ -46,10 +46,12 @@ class User(db.Model, UserMixin):
 class Project(db.Model):
     __tablename__ = 'projects'
     
+    VALID_STATUSES = ['active', 'completed', 'on_hold', 'archived']
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    status = db.Column(db.String(20), default='active')  # active, completed, on_hold, archived
+    status = db.Column(db.String(20), default='active')  # Changed back to status
     priority = db.Column(db.String(20), default='medium')  # low, medium, high
     due_date = db.Column(db.DateTime)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -57,11 +59,17 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # New fields
-    features = db.Column(db.JSON, default=list)  # Store list of features as JSON
-    project_url = db.Column(db.String(500))  # Store project URL/link
+    features = db.Column(db.JSON, default=list)
+    project_url = db.Column(db.String(500))
     
     # Relationships
     tasks = db.relationship('Task', backref='project', lazy=True, cascade='all, delete-orphan')
+
+    def __setattr__(self, name, value):
+        """Validate status before setting it"""
+        if name == 'status' and value not in self.VALID_STATUSES:
+            raise ValueError(f"Invalid status. Must be one of: {', '.join(self.VALID_STATUSES)}")
+        super().__setattr__(name, value)
 
 class Task(db.Model):
     __tablename__ = 'tasks'
