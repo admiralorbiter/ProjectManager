@@ -257,3 +257,135 @@ def init_routes(app):
         
         users = User.query.all()
         return render_template('admin/users.html', users=users)
+
+    @app.route('/admin/users/quick-add', methods=['POST'])
+    @login_required
+    def quick_add_user():
+        if not current_user.is_administrator():
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('index'))
+        
+        email = request.form.get('email')
+        password = request.form.get('password') or 'prepkc123'  # Use provided password or default
+        
+        if not email:
+            flash('Email is required.', 'error')
+            return redirect(url_for('admin_users'))
+        
+        # Use email as username
+        username = email
+        
+        # Check if user already exists
+        if User.query.filter_by(email=email).first():
+            flash('User with this email already exists.', 'error')
+            return redirect(url_for('admin_users'))
+        
+        if User.query.filter_by(username=username).first():
+            flash('User with this username already exists.', 'error')
+            return redirect(url_for('admin_users'))
+        
+        # Create new user
+        new_user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password),
+            role='user',
+            is_admin=False
+        )
+        
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash(f'User {email} created successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error creating user.', 'error')
+            
+        return redirect(url_for('admin_users'))
+
+    @app.route('/admin/users/<username>/delete', methods=['DELETE'])
+    @login_required
+    def delete_user(username):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Access denied. Admin privileges required.'}), 403
+        
+        # Prevent self-deletion
+        if username == current_user.username:
+            return jsonify({'success': False, 'error': 'Cannot delete your own account'}), 400
+        
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        try:
+            # Remove user from all projects
+            for project in user.member_of_projects:
+                project.members.remove(user)
+            
+            # Reassign or delete tasks
+            Task.query.filter_by(assigned_to_id=user.id).update({'assigned_to_id': None})
+            Task.query.filter_by(created_by_id=user.id).update({'created_by_id': current_user.id})
+            
+            # Delete the user
+            db.session.delete(user)
+            db.session.commit()
+            
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/admin/users/<username>/info', methods=['GET'])
+    @login_required
+    def get_user_info(username):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'user': {
+                'email': user.email,
+                'role': user.role,
+                'is_active': user.is_active
+            }
+        })
+
+    @app.route('/admin/users/<username>/edit', methods=['POST'])
+    @login_required
+    def edit_user(username):
+        if not current_user.is_administrator():
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        if username == current_user.username:
+            return jsonify({'success': False, 'error': 'Cannot edit your own account this way'}), 400
+        
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        try:
+            data = request.get_json()
+            
+            # Validate email format
+            if not data.get('email') or '@' not in data['email']:
+                return jsonify({'success': False, 'error': 'Invalid email format'}), 400
+            
+            # Check if email is taken by another user
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user and existing_user.username != username:
+                return jsonify({'success': False, 'error': 'Email already in use'}), 400
+            
+            user.email = data['email']
+            user.role = data['role']
+            user.is_active = data['is_active']
+            
+            db.session.commit()
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500

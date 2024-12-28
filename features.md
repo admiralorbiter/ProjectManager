@@ -29,6 +29,7 @@
 
 - [ ] User Profile
     - [x] User Profile Page
+    - [ ] User Profile Edit
     - [ ] View Assigned Tasks
 
 
@@ -36,8 +37,9 @@
 - [ ] Admin Dashboard
 - [ ] Admin User Management
     - [x] View All Users
+    - [x] Create User
     - [ ] Edit User
-    - [ ] Delete User
+    - [x] Delete User
 
 ## UI/UX Features
 - [ ] Filtering and Searching
@@ -58,5 +60,9 @@
     - [] Project Future Development
 - [] User Documentation
     - [] User Guide
+
+## Future Features
+- [ ] Create User with just email (username will be the email) password will be generated and sent to the user
+- [ ] Create users with CSV Import
 
 
