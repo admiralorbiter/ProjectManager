@@ -1,0 +1,36 @@
+# Features
+
+## Core Features
+
+- [x] User Authentication System
+    - [] Admin/Role Based User Management
+    - [] Password Change + Reset
+    - [] User Creation
+
+- [x] Project Management
+    - [x] Create/Edit Projects
+    - [x] Project Status Tracking (Active, Completed, On Hold, Archived)
+    - [x] Priority Levels (Low, Medium, High)
+    - [x] Project URL/External Link Support
+    - [x] Features List for Each Project
+    - [x] Due Date Tracking
+
+- [x] Task Management
+    - [x] Hierarchical Task System
+    - [x] Main Tasks
+    - [x] Subtasks Support
+    - [x] Task Status Tracking (Open, In Progress, Completed, Blocked)
+    - [x] Task Assignment System
+    - [x] Quick Assign Feature with Search
+        - [ ] Fix on the Add New Task Modal
+    - [x] Task Completion Toggle
+    - [x] Due Date Management
+    - [ ] Edit Task
+    - [ ] Delete Task
+
+## UI/UX Features
+- [] Filtering and Searching
+    - [] Search by Project Title and Description
+    - [] Filter by Project Status, Priority, and Due Date
+
+
