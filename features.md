@@ -44,11 +44,6 @@
     - [x] Delete User
     - [x] Change User Password
 
-## UI/UX Features
-- [ ] Filtering and Searching
-    - [ ] Search by Project Title and Description
-    - [ ] Filter by Project Status, Priority, and Due Date
-
 ## Technical Features
 - [ ] Unit Testing
 

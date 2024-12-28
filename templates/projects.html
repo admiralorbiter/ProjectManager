@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}My Projects{% endblock %}
+{% block title %}Spring 2025 Projects{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}">
@@ -9,7 +9,7 @@
 {% block content %}
 <div class="projects-container">
     <div class="projects-header">
-        <h1>My Projects</h1>
+        <h1>Spring 2025 Projects</h1>
         {% if current_user.is_administrator() %}
         <a href="{{ url_for('create_project') }}" class="btn create-project-btn">
             <i class="fas fa-plus"></i> New Project
@@ -17,65 +17,57 @@
         {% endif %}
     </div>
 
-    <div class="projects-filters">
-        <div class="search-box">
-            <input type="text" placeholder="Search projects..." id="projectSearch">
-        </div>
-        <div class="filter-options">
-            <select id="statusFilter">
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="on_hold">On Hold</option>
-                <option value="archived">Archived</option>
-            </select>
-            <select id="priorityFilter">
-                <option value="">All Priorities</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-            </select>
-        </div>
-    </div>
-
     <div class="projects-grid">
         {% for project in projects %}
         <div class="project-card">
-            <h3 class="project-title">
-                <a href="{{ url_for('view_project', project_id=project.id) }}" class="project-title">
-                    {{ project.title }}
-                </a>
-            </h3>
+            <div class="project-header">
+                <h3 class="project-title">
+                    <a href="{{ url_for('view_project', project_id=project.id) }}" class="project-title-link">
+                        {{ project.title }}
+                    </a>
+                </h3>
+                <div class="project-meta">
+                    <span class="meta-label">@{{ project.owner.username }}</span>
+                    <span class="status-badge {{ project.status }}">{{ project.status }}</span>
+                </div>
+            </div>
+
             <p class="project-description">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
             
+            <div class="project-stats">
+                <div class="task-stats">
+                    <span class="task-count open">
+                        <i class="fas fa-tasks"></i>
+                        {{ project.tasks|selectattr('status', 'equalto', 'open')|list|length }} open
+                    </span>
+                    <span class="task-count assigned">
+                        <i class="fas fa-user-check"></i>
+                        {{ project.tasks|selectattr('assigned_to_id')|list|length }} assigned
+                    </span>
+                </div>
+            </div>
+
             <div class="project-actions">
+                <div class="primary-actions">
+                    <a href="{{ url_for('view_project', project_id=project.id) }}" class="btn view-details-btn">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    {% if project.project_url %}
+                    <a href="{{ project.project_url }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="btn visit-project-btn">
+                        <i class="fas fa-external-link-alt"></i> Visit Project
+                    </a>
+                    {% endif %}
+                </div>
                 {% if project.features %}
-                <button class="features-btn" 
+                <button class="btn features-btn" 
                         data-features='{{ project.features|tojson|safe }}'
                         data-title="{{ project.title|e }}">
                     <i class="fas fa-list"></i> View Features
                 </button>
                 {% endif %}
-                
-                {% if project.project_url %}
-                <a href="{{ project.project_url }}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="url-button">
-                    <i class="fas fa-external-link-alt"></i> Visit Project
-                </a>
-                {% endif %}
-            </div>
-            
-            <div class="project-meta">
-                <div class="meta-info">
-                    <span class="meta-label">@{{ project.owner.username }}</span>
-                    <span class="status-badge {{ project.status }}">{{ project.status }}</span>
-                </div>
-            </div>
-            <div class="task-stats">
-                <span class="task-count open">{{ project.tasks|selectattr('status', 'equalto', 'open')|list|length }} open</span>
-                <span class="task-count assigned">{{ project.tasks|selectattr('assigned_to_id')|list|length }} assigned</span>
             </div>
         </div>
         {% endfor %}
@@ -95,39 +87,46 @@
     </div>
 </div>
 
+<!-- Add this script at the bottom of the content block -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add click listeners for feature buttons
+    const modal = document.getElementById('featuresModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const featuresList = document.getElementById('featuresList');
+    const closeBtn = document.querySelector('.close-modal');
+
+    // Close modal when clicking the close button
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Handle feature button clicks
     document.querySelectorAll('.features-btn').forEach(button => {
         button.addEventListener('click', function() {
             const features = JSON.parse(this.dataset.features);
             const title = this.dataset.title;
-            showFeatures(features, title);
+            
+            // Update modal content
+            modalTitle.textContent = `${title} - Features`;
+            featuresList.innerHTML = ''; // Clear existing features
+            
+            // Add each feature to the list
+            features.forEach(feature => {
+                const li = document.createElement('li');
+                li.textContent = feature;
+                featuresList.appendChild(li);
+            });
+            
+            // Show the modal
+            modal.style.display = "block";
         });
-    });
-
-    // Show features modal
-    function showFeatures(features, projectTitle) {
-        const modal = document.getElementById('featuresModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const featuresList = document.getElementById('featuresList');
-        
-        modalTitle.textContent = projectTitle + ' - Features';
-        featuresList.innerHTML = features.map(feature => `<li>${feature}</li>`).join('');
-        modal.style.display = 'block';
-    }
-
-    // Close modal when clicking the X button
-    document.querySelector('.close-modal').addEventListener('click', function() {
-        document.getElementById('featuresModal').style.display = 'none';
-    });
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('featuresModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
     });
 });
 </script>

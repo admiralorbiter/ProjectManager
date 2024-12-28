@@ -33,7 +33,6 @@ def init_routes(app):
     @app.route('/projects')
     @login_required
     def projects():
-        # Get all projects, ordered by creation date
         projects = Project.query.order_by(Project.created_at.desc()).all()
         return render_template('projects.html', projects=projects)
 
