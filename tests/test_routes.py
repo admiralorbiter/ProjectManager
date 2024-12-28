@@ -1,5 +1,5 @@
 import pytest
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from models import User, Project, Task, db
 
@@ -133,76 +133,65 @@ def test_unauthorized_project_creation(client, test_regular_user, app):
         # Instead of checking flash message, verify we're redirected to projects page
         assert b'<title>Spring 2025 Projects</title>' in response.data
 
-def test_view_project(client, test_admin_user, app):
-    """Test viewing a project"""
+def test_view_project(client, test_admin_user, test_project, app):
+    """Test project viewing"""
     with app.app_context():
-        # Setup user and project
         db.session.add(test_admin_user)
-        project = Project(
-            title='Test Project',
-            description='Test Description',
-            owner=test_admin_user,
-            status='active'
-        )
-        db.session.add(project)
+        db.session.add(test_project)
         db.session.commit()
 
-        # Login
+        # Login as admin
         client.post('/login', data={
             'username': 'admin',
             'password': 'password123'
         })
 
         # Test viewing project
-        response = client.get(f'/projects/{project.id}')
+        response = client.get(f'/projects/{test_project.id}')
         assert response.status_code == 200
         assert b'Test Project' in response.data
 
-def test_add_task(client, test_admin_user, app):
-    """Test adding a task to a project"""
+def test_add_task(client, test_admin_user, test_project, app):
+    """Test task creation"""
     with app.app_context():
-        # Setup user and project
         db.session.add(test_admin_user)
-        project = Project(
-            title='Test Project',
-            description='Test Description',
-            owner=test_admin_user,
-            status='active'
-        )
-        db.session.add(project)
+        db.session.add(test_project)
         db.session.commit()
 
-        # Login
+        # Login as admin
         client.post('/login', data={
             'username': 'admin',
             'password': 'password123'
         })
 
         # Test adding task
-        response = client.post(f'/project/{project.id}/add_task', data={
-            'title': 'Test Task',
-            'description': 'Test Description',
+        response = client.post(f'/project/{test_project.id}/add_task', data={
+            'title': 'New Task',
+            'description': 'Task Description',
             'status': 'open'
         })
         assert response.status_code == 200
-        data = response.get_json()
-        assert data['success'] == True 
+        assert response.get_json()['success'] == True
+
+        # Verify task was created
+        task = Task.query.filter_by(title='New Task').first()
+        assert task is not None
+        assert task.project_id == test_project.id
 
 def test_toggle_task(client, test_admin_user, test_task, app):
-    """Test toggling task completion status"""
+    """Test task toggling"""
     with app.app_context():
-        # Setup
         db.session.add(test_admin_user)
         db.session.add(test_task)
         db.session.commit()
 
-        # Login
+        # Login as admin
         client.post('/login', data={
             'username': 'admin',
             'password': 'password123'
         })
 
-        # Test toggle
+        # Test toggling task
         response = client.post(f'/api/tasks/{test_task.id}/toggle')
         assert response.status_code == 200
         data = response.get_json()
@@ -210,20 +199,21 @@ def test_toggle_task(client, test_admin_user, test_task, app):
         assert data['is_completed'] == True
         assert data['status'] == 'completed'
 
-def test_lookup_user(client, test_admin_user, app):
+def test_lookup_user(client, test_admin_user, test_regular_user, app):
     """Test user lookup functionality"""
     with app.app_context():
         db.session.add(test_admin_user)
+        db.session.add(test_regular_user)
         db.session.commit()
 
-        # Login required for this endpoint
+        # Login as admin
         client.post('/login', data={
             'username': 'admin',
             'password': 'password123'
         })
 
         # Test successful lookup
-        response = client.get(f'/api/users/lookup/admin')
+        response = client.get('/api/users/lookup/user')
         assert response.status_code == 200
         data = response.get_json()
         assert 'user_id' in data
@@ -254,7 +244,7 @@ def test_assign_task(client, test_admin_user, test_regular_user, test_task, app)
         assert response.get_json()['success'] == True
 
 def test_user_profile(client, test_admin_user, test_regular_user, app):
-    """Test user profile access"""
+    """Test user profile viewing"""
     with app.app_context():
         db.session.add(test_admin_user)
         db.session.add(test_regular_user)
@@ -269,10 +259,12 @@ def test_user_profile(client, test_admin_user, test_regular_user, app):
         # Test viewing own profile
         response = client.get('/profile/admin')
         assert response.status_code == 200
+        assert b'admin' in response.data
 
-        # Test admin viewing other profile
+        # Test viewing other user's profile as admin
         response = client.get('/profile/user')
         assert response.status_code == 200
+        assert b'user' in response.data
 
 def test_admin_user_management(client, test_admin_user, test_regular_user, app):
     """Test admin user management functions"""
@@ -858,3 +850,127 @@ def test_task_operations_errors(client, test_admin_user, test_task, app):
         # Refresh the session and check if subtask exists
         db.session.expire_all()
         assert db.session.query(Task).filter_by(id=subtask_id).first() is None 
+
+def test_logout(client, test_admin_user, app):
+    """Test logout functionality"""
+    with app.app_context():
+        # Setup and login
+        db.session.add(test_admin_user)
+        db.session.commit()
+        
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+        
+        # Test logout
+        response = client.get('/logout', follow_redirects=True)
+        assert response.status_code == 200
+        # Verify redirect to index page
+        assert b'Project Manager' in response.data  # Changed from 'Home' to match your template
+
+def test_edit_project(client, test_admin_user, test_project, app):
+    """Test project editing"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_project)
+        db.session.commit()
+
+        # Login as project owner
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test successful edit
+        response = client.post(f'/projects/{test_project.id}/edit', data={
+            'title': 'Updated Project',
+            'description': 'Updated Description',
+            'status': 'active',
+            'priority': 'high',
+            'project_url': 'http://example.com',
+            'features[]': ['Feature 1', 'Feature 2'],
+            'due_date': '2024-12-31'
+        }, follow_redirects=True)
+        assert response.status_code == 200
+
+        # Verify changes in database
+        updated_project = Project.query.get(test_project.id)
+        assert updated_project.title == 'Updated Project'
+        assert updated_project.description == 'Updated Description'
+        assert updated_project.priority == 'high'
+
+def test_unauthorized_project_edit(client, test_regular_user, test_project, app):
+    """Test project editing by non-owner"""
+    with app.app_context():
+        db.session.add(test_regular_user)
+        db.session.add(test_project)  # owned by admin user
+        db.session.commit()
+
+        # Login as non-owner
+        client.post('/login', data={
+            'username': 'user',
+            'password': 'password123'
+        })
+
+        # Test edit attempt
+        response = client.post(f'/projects/{test_project.id}/edit', data={
+            'title': 'Updated Project',
+            'description': 'Updated Description'
+        }, follow_redirects=True)
+        assert response.status_code == 200
+        
+        # Verify project remains unchanged
+        project = Project.query.get(test_project.id)
+        assert project.title == 'Test Project'
+
+def test_change_password(client, test_admin_user, app):
+    """Test password change functionality"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test password change
+        response = client.post('/profile/admin/change-password', data={
+            'current_password': 'password123',
+            'new_password': 'newpassword123',
+            'confirm_password': 'newpassword123'
+        }, follow_redirects=True)
+        assert response.status_code == 200
+
+        # Verify password was changed
+        user = User.query.filter_by(username='admin').first()
+        assert check_password_hash(user.password_hash, 'newpassword123')
+
+def test_edit_profile(client, test_admin_user, app):
+    """Test profile editing"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test profile edit
+        response = client.post('/profile/admin/edit', json={
+            'email': 'newemail@example.com',
+            'first_name': 'Updated',
+            'last_name': 'Admin'
+        })
+        assert response.status_code == 200
+        assert response.get_json()['success'] == True
+
+        # Verify changes
+        user = User.query.filter_by(username='admin').first()
+        assert user.email == 'newemail@example.com'
+        assert user.first_name == 'Updated'
+        assert user.last_name == 'Admin'
