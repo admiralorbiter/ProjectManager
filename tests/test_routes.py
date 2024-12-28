@@ -222,26 +222,53 @@ def test_lookup_user(client, test_admin_user, test_regular_user, app):
         response = client.get('/api/users/lookup/nonexistent')
         assert response.status_code == 404
 
-def test_assign_task(client, test_admin_user, test_regular_user, test_task, app):
+def test_assign_task(client, test_admin_user, test_task, test_regular_user, app):
     """Test task assignment"""
     with app.app_context():
-        # Setup
         db.session.add(test_admin_user)
-        db.session.add(test_regular_user)
         db.session.add(test_task)
+        db.session.add(test_regular_user)
         db.session.commit()
 
-        # Login
         client.post('/login', data={
             'username': 'admin',
             'password': 'password123'
         })
 
-        # Test assignment
-        response = client.post(f'/api/tasks/{test_task.id}/assign', 
-            json={'username': 'user'})
+        # Test successful assignment
+        response = client.post(f'/api/tasks/{test_task.id}/assign', json={
+            'username': 'user'
+        })
         assert response.status_code == 200
         assert response.get_json()['success'] == True
+
+        # Verify assignment
+        task = Task.query.get(test_task.id)
+        assert task.assigned_to_id == test_regular_user.id
+
+def test_assign_task_errors(client, test_admin_user, test_task, app):
+    """Test task assignment error cases"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_task)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test missing username
+        response = client.post(f'/api/tasks/{test_task.id}/assign', json={})
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Username is required'
+
+        # Test non-existent user
+        response = client.post(f'/api/tasks/{test_task.id}/assign', json={
+            'username': 'nonexistent'
+        })
+        assert response.status_code == 404
+        assert response.get_json()['error'] == 'User not found'
 
 def test_user_profile(client, test_admin_user, test_regular_user, app):
     """Test user profile viewing"""
@@ -267,7 +294,7 @@ def test_user_profile(client, test_admin_user, test_regular_user, app):
         assert b'user' in response.data
 
 def test_admin_user_management(client, test_admin_user, test_regular_user, app):
-    """Test admin user management functions"""
+    """Test admin user management features"""
     with app.app_context():
         db.session.add(test_admin_user)
         db.session.add(test_regular_user)
@@ -286,7 +313,7 @@ def test_admin_user_management(client, test_admin_user, test_regular_user, app):
         assert data['success'] == True
         assert data['user']['username'] == 'user'
 
-        # Test user update - fixed endpoint and payload
+        # Test user update
         response = client.post('/admin/users/user/edit', json={
             'username': 'user',
             'email': 'updated@example.com',
@@ -657,7 +684,7 @@ def test_task_operations_with_exceptions(client, test_admin_user, test_task, app
         assert db.session.query(Task).filter_by(id=test_task.id).first() is None
 
 def test_admin_user_management(client, test_admin_user, test_regular_user, app):
-    """Test admin user management functions"""
+    """Test admin user management features"""
     with app.app_context():
         db.session.add(test_admin_user)
         db.session.add(test_regular_user)
@@ -676,7 +703,7 @@ def test_admin_user_management(client, test_admin_user, test_regular_user, app):
         assert data['success'] == True
         assert data['user']['username'] == 'user'
 
-        # Test user update - fixed endpoint and payload
+        # Test user update
         response = client.post('/admin/users/user/edit', json={
             'username': 'user',
             'email': 'updated@example.com',
@@ -974,3 +1001,242 @@ def test_edit_profile(client, test_admin_user, app):
         assert user.email == 'newemail@example.com'
         assert user.first_name == 'Updated'
         assert user.last_name == 'Admin'
+
+def test_edit_project_invalid_date(client, test_admin_user, test_project, app):
+    """Test project editing with invalid date format"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_project)
+        db.session.commit()
+
+        # Store original due date
+        original_due_date = test_project.due_date
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test editing with invalid date
+        response = client.post(f'/projects/{test_project.id}/edit', data={
+            'title': 'Updated Project',
+            'description': 'Updated Description',
+            'status': 'active',
+            'due_date': 'invalid-date'  # Invalid date format
+        }, follow_redirects=True)
+        
+        # Verify response
+        assert response.status_code == 200
+        
+        # Verify project updates
+        project = Project.query.get(test_project.id)
+        assert project.title == 'Updated Project'  # Title should be updated
+        assert project.description == 'Updated Description'  # Description should be updated
+        assert project.due_date == original_due_date  # Due date should remain unchanged
+
+def test_add_task_unauthorized(client, test_regular_user, test_project, app):
+    """Test task creation by unauthorized user"""
+    with app.app_context():
+        db.session.add(test_regular_user)
+        db.session.add(test_project)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'user',
+            'password': 'password123'
+        })
+
+        response = client.post(f'/project/{test_project.id}/add_task', data={
+            'title': 'New Task',
+            'description': 'Task Description'
+        })
+        assert response.status_code == 403
+        assert response.get_json()['error'] == 'Unauthorized'
+
+def test_add_task_missing_title(client, test_admin_user, test_project, app):
+    """Test task creation with missing title"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_project)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.post(f'/project/{test_project.id}/add_task', data={
+            'description': 'Task Description'
+        })
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Title is required'
+
+def test_delete_task(client, test_admin_user, test_task, app):
+    """Test task deletion"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_task)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.delete(f'/api/tasks/{test_task.id}/delete')
+        assert response.status_code == 200
+        assert response.get_json()['success'] == True
+
+        # Verify task was deleted
+        task = Task.query.get(test_task.id)
+        assert task is None
+
+def test_delete_user(client, test_admin_user, test_regular_user, app):
+    """Test user deletion"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_regular_user)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.delete(f'/admin/users/{test_regular_user.username}/delete')
+        assert response.status_code == 200
+        assert response.get_json()['success'] == True
+
+        # Verify user was deleted
+        user = User.query.filter_by(username='user').first()
+        assert user is None
+
+def test_delete_user_self(client, test_admin_user, app):
+    """Test attempting to delete own user account"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.delete('/admin/users/admin/delete')
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Cannot delete your own account'
+
+def test_change_password_mismatch(client, test_admin_user, app):
+    """Test password change with mismatched passwords"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.post('/profile/admin/change-password', data={
+            'current_password': 'password123',
+            'new_password': 'newpassword123',
+            'confirm_password': 'different_password'
+        }, follow_redirects=True)
+        assert response.status_code == 200
+        assert b'New passwords do not match' in response.data
+
+def test_change_password_wrong_current(client, test_admin_user, app):
+    """Test password change with wrong current password"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.commit()
+
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        response = client.post('/profile/admin/change-password', data={
+            'current_password': 'wrong_password',
+            'new_password': 'newpassword123',
+            'confirm_password': 'newpassword123'
+        }, follow_redirects=True)
+        assert response.status_code == 200
+        assert b'Current password is incorrect' in response.data
+
+def test_edit_task_errors(client, test_admin_user, test_task, app):
+    """Test task editing error cases"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_task)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test editing with missing data
+        response = client.post(f'/api/tasks/{test_task.id}/edit', data={})
+        assert response.status_code == 400
+
+        # Test editing non-existent task
+        response = client.post('/api/tasks/999/edit', data={
+            'title': 'Updated Task'
+        })
+        assert response.status_code == 404
+
+def test_edit_profile_errors(client, test_admin_user, test_regular_user, app):
+    """Test profile editing error cases"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_regular_user)
+        db.session.commit()
+
+        # Login as admin
+        client.post('/login', data={
+            'username': 'admin',
+            'password': 'password123'
+        })
+
+        # Test invalid email format
+        response = client.post('/profile/admin/edit', json={
+            'email': 'invalid-email',
+            'first_name': 'Updated',
+            'last_name': 'Admin'
+        })
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Invalid email format'
+
+        # Test duplicate email
+        response = client.post('/profile/admin/edit', json={
+            'email': 'user@example.com',  # Already used by test_regular_user
+            'first_name': 'Updated',
+            'last_name': 'Admin'
+        })
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Email already in use'
+
+def test_user_profile_access(client, test_admin_user, test_regular_user, app):
+    """Test user profile access permissions"""
+    with app.app_context():
+        db.session.add(test_admin_user)
+        db.session.add(test_regular_user)
+        db.session.commit()
+
+        # Login as regular user
+        client.post('/login', data={
+            'username': 'user',
+            'password': 'password123'
+        })
+
+        # Test accessing own profile
+        response = client.get('/profile/user')
+        assert response.status_code == 200
+        assert b'user' in response.data
+
+        # Test accessing another user's profile (should redirect)
+        response = client.get('/profile/admin')
+        assert response.status_code == 302  # Redirect
