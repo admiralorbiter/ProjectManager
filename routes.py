@@ -172,16 +172,28 @@ def init_routes(app):
     @app.route('/api/tasks/<int:task_id>/toggle', methods=['POST'])
     @login_required
     def toggle_task(task_id):
-        task = Task.query.get_or_404(task_id)
-        
-        # Check if user has access to this task's project
-        if task.project.owner_id != current_user.id and current_user not in task.project.members:
-            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
-        
-        task.is_completed = not task.is_completed
-        db.session.commit()
-        
-        return jsonify({'success': True, 'is_completed': task.is_completed})
+        try:
+            task = Task.query.get_or_404(task_id)
+            
+            # Check if user has access to this task's project
+            if task.project.owner_id != current_user.id and current_user not in task.project.members:
+                return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+            
+            # Toggle the completion state
+            task.is_completed = not task.is_completed
+            task.status = 'completed' if task.is_completed else 'open'
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'is_completed': task.is_completed,
+                'status': task.status
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     @app.route('/api/users/lookup/<username>')
     @login_required

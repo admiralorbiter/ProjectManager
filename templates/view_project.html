@@ -341,6 +341,12 @@
 
     // Task completion toggle function
     window.toggleTaskCompletion = function(taskId) {
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        const checkbox = taskCard.querySelector('.task-checkbox');
+        
+        // Store the new state we're trying to set
+        const newCompletionState = checkbox.checked;
+        
         fetch(`/api/tasks/${taskId}/toggle`, {
             method: 'POST',
             headers: {
@@ -350,15 +356,22 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
-                taskCard.classList.toggle('completed');
-                
-                // Also toggle the checkbox
-                const checkbox = taskCard.querySelector('.task-checkbox');
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                }
+                // Update the UI based on the response
+                taskCard.classList.toggle('completed', newCompletionState);
+                checkbox.checked = newCompletionState;
+            } else {
+                // Revert the checkbox if the request failed
+                checkbox.checked = !newCompletionState;
+                taskCard.classList.toggle('completed', !newCompletionState);
+                alert('Failed to update task status');
             }
+        })
+        .catch(error => {
+            // Revert the checkbox if there was an error
+            console.error('Error:', error);
+            checkbox.checked = !newCompletionState;
+            taskCard.classList.toggle('completed', !newCompletionState);
+            alert('Error updating task status');
         });
     };
 

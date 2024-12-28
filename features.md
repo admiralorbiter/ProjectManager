@@ -22,7 +22,7 @@
     - [x] Task Status Tracking (Open, In Progress, Completed, Blocked)
     - [x] Task Assignment System
     - [x] Quick Assign Feature with Search
-    - [ ] Task Completion Toggle
+    - [x] Task Completion Toggle
     - [x] Due Date Management
     - [ ] Edit Task
     - [ ] Delete Task
