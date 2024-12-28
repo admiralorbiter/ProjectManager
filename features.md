@@ -1,5 +1,8 @@
 # Features
 
+## Misc List
+- [ ] Edit User should align between admin edit and user edit
+
 ## Core Features
 
 - [x] User Authentication System
@@ -27,14 +30,13 @@
     - [x] Edit Task
     - [x] Delete Task
 
-- [ ] User Profile
+- [x] User Profile
     - [x] User Profile Page
-    - [ ] User Profile Edit
+    - [x] User Profile Edit
     - [x] View Assigned Tasks
 
 
 ## Admin Features
-- [ ] Admin Dashboard
 - [x] Admin User Management
     - [x] View All Users
     - [x] Create User

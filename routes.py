@@ -461,3 +461,32 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/profile/<username>/edit', methods=['POST'])
+    @login_required
+    def edit_profile(username):
+        if current_user.username != username:
+            return jsonify({'success': False, 'error': 'You can only edit your own profile'}), 403
+        
+        try:
+            data = request.get_json()
+            
+            # Validate email format
+            if not data.get('email') or '@' not in data['email']:
+                return jsonify({'success': False, 'error': 'Invalid email format'}), 400
+            
+            # Check if email is taken by another user
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user and existing_user.username != username:
+                return jsonify({'success': False, 'error': 'Email already in use'}), 400
+            
+            current_user.email = data['email']
+            current_user.first_name = data.get('first_name')
+            current_user.last_name = data.get('last_name')
+            
+            db.session.commit()
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
