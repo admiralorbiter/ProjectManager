@@ -7,6 +7,7 @@
     - [x] Admin/Role Based User Management
     - [x] Password Change
     - [x] User Creation
+    - [ ] Toggle Inputs Depend on User Role and Assignment 
 
 - [x] Project Management
     - [x] Create/Edit Projects
@@ -55,6 +56,7 @@
     - [x] Project Future Development
 - [] User Documentation
     - [] User Guide
+    - [] Commented Code
 
 ## Future Features
 - [ ] Create User with just email (username will be the email) password will be generated and sent to the user
