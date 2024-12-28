@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>{{ user.username }}'s Profile</h1>
+        {% if is_admin %}
+            <a href="{{ url_for('admin_users') }}" class="admin-btn">
+                <i class="fas fa-users-cog"></i> Manage Users
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-info">
+            <h2><i class="fas fa-user"></i> User Information</h2>
+            <div class="info-group">
+                <label><i class="fas fa-envelope"></i> Email</label>
+                <span>{{ user.email }}</span>
+            </div>
+            <div class="info-group">
+                <label><i class="fas fa-user-tag"></i> Role</label>
+                <span>{{ user.role }}</span>
+            </div>
+            <div class="info-group">
+                <label><i class="fas fa-calendar-alt"></i> Member Since</label>
+                <span>{{ user.created_at.strftime('%B %d, %Y') }}</span>
+            </div>
+        </div>
+
+        <div class="assigned-tasks">
+            <h2><i class="fas fa-tasks"></i> Assigned Tasks</h2>
+            {% if assigned_tasks %}
+                <div class="tasks-list">
+                    {% for task in assigned_tasks %}
+                    <div class="task-card {% if task.is_completed %}completed{% endif %}">
+                        <div class="task-header">
+                            <h3>{{ task.title }}</h3>
+                            <span class="task-status">{{ task.status }}</span>
+                        </div>
+                        <p class="task-description">{{ task.description }}</p>
+                        <div class="task-meta">
+                            <span class="project-name">
+                                <i class="fas fa-project-diagram"></i>
+                                <a href="{{ url_for('view_project', project_id=task.project.id) }}">{{ task.project.title }}</a>
+                            </span>
+                            {% if task.due_date %}
+                            <span class="due-date">
+                                <i class="fas fa-clock"></i>
+                                Due: {{ task.due_date.strftime('%Y-%m-%d') }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-tasks">
+                    <i class="fas fa-inbox"></i>
+                    No tasks assigned.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

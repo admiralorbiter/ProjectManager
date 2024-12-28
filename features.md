@@ -3,7 +3,7 @@
 ## Core Features
 
 - [x] User Authentication System
-    - [] Admin/Role Based User Management
+    - [x] Admin/Role Based User Management
     - [] Password Change + Reset
     - [] User Creation
 
@@ -28,13 +28,16 @@
     - [ ] Delete Task
 
 - [ ] User Profile
-    - [ ] User Profile Page
+    - [x] User Profile Page
     - [ ] View Assigned Tasks
 
 
 ## Admin Features
 - [ ] Admin Dashboard
 - [ ] Admin User Management
+    - [x] View All Users
+    - [ ] Edit User
+    - [ ] Delete User
 
 ## UI/UX Features
 - [ ] Filtering and Searching

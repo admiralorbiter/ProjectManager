@@ -229,3 +229,31 @@ def init_routes(app):
             
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/profile/<username>')
+    @login_required
+    def user_profile(username):
+        user = User.query.filter_by(username=username).first_or_404()
+        
+        # Get tasks assigned to this user
+        assigned_tasks = Task.query.filter_by(assigned_to_id=user.id).all()
+        
+        # If user is admin or viewing their own profile
+        if current_user.is_administrator() or current_user.username == username:
+            return render_template('profile.html', 
+                                 user=user, 
+                                 assigned_tasks=assigned_tasks,
+                                 is_admin=current_user.is_administrator())
+        
+        flash('You do not have permission to view this profile.', 'error')
+        return redirect(url_for('index'))
+
+    @app.route('/admin/users')
+    @login_required
+    def admin_users():
+        if not current_user.is_administrator():
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('index'))
+        
+        users = User.query.all()
+        return render_template('admin/users.html', users=users)

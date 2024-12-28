@@ -1,0 +1,124 @@
+/* Admin Container */
+.admin-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+/* Header Section */
+.admin-container h1 {
+    font-size: 2.5rem;
+    color: var(--dark-purple);
+    margin-bottom: 2rem;
+    font-weight: bold;
+}
+
+/* Users Table Container */
+.users-table {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Table Header */
+.table thead {
+    background-color: var(--dark-purple);
+    color: var(--pale-dogwood);
+}
+
+.table th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+/* Table Body */
+.table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(55, 37, 73, 0.05);
+}
+
+.table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(55, 37, 73, 0.1);
+    color: var(--raisin-black);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: rgba(55, 37, 73, 0.1);
+    color: var(--dark-purple);
+}
+
+.status-badge.inactive {
+    background-color: rgba(183, 93, 105, 0.1);
+    color: var(--redwood);
+}
+
+/* Action Buttons */
+.btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.btn-info {
+    background-color: var(--eggplant);
+    color: var(--pale-dogwood);
+}
+
+.btn-info:hover {
+    background-color: var(--dark-purple);
+    color: var(--pale-dogwood);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 1rem;
+    }
+
+    .admin-container h1 {
+        font-size: 2rem;
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .table th, 
+    .table td {
+        padding: 0.75rem;
+    }
+} 

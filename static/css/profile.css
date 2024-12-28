@@ -1,0 +1,172 @@
+/* Profile Container */
+.profile-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+/* Profile Header */
+.profile-header {
+    background-color: var(--dark-purple);
+    color: var(--pale-dogwood);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.admin-btn {
+    background-color: var(--redwood);
+    color: var(--pale-dogwood);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.admin-btn:hover {
+    background-color: var(--raisin-black);
+    color: var(--pale-dogwood);
+}
+
+/* Profile Content */
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+/* User Information */
+.profile-info {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info h2 {
+    color: var(--dark-purple);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.info-group {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--pale-dogwood);
+    border-radius: 0.5rem;
+}
+
+.info-group label {
+    display: block;
+    color: var(--dark-purple);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.info-group span {
+    color: var(--eggplant);
+}
+
+/* Assigned Tasks */
+.assigned-tasks {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.assigned-tasks h2 {
+    color: var(--dark-purple);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.tasks-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.task-card {
+    background-color: var(--pale-dogwood);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+}
+
+.task-card.completed {
+    opacity: 0.7;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.task-header h3 {
+    color: var(--dark-purple);
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.task-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    background-color: var(--eggplant);
+    color: var(--pale-dogwood);
+}
+
+.task-description {
+    color: var(--raisin-black);
+    margin-bottom: 1rem;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--eggplant);
+}
+
+.no-tasks {
+    color: var(--eggplant);
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--pale-dogwood);
+    border-radius: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .profile-header h1 {
+        font-size: 2rem;
+    }
+} 
