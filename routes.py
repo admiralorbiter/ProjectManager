@@ -5,6 +5,7 @@ from models import User, db, Project, Task
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timezone
 import werkzeug.exceptions
+from urllib.parse import urlparse
 
 def init_routes(app):
     @app.route('/')
@@ -566,8 +567,20 @@ def init_routes(app):
             action = request.form.get('action')
             
             if action == 'submit':
+                submission_url = request.form.get('submission_url')
+                # Validate URL if provided
+                if submission_url:
+                    try:
+                        result = urlparse(submission_url)
+                        if not all([result.scheme, result.netloc]):
+                            flash('Invalid URL format. Please include http:// or https://', 'error')
+                            return redirect(url_for('task_detail', task_id=task_id))
+                    except ValueError:
+                        flash('Invalid URL format', 'error')
+                        return redirect(url_for('task_detail', task_id=task_id))
+                
                 task.submission_text = request.form.get('submission_text')
-                task.submission_url = request.form.get('submission_url')
+                task.submission_url = submission_url
                 task.submission_date = datetime.now(timezone.utc)
                 flash('Submission saved successfully!', 'success')
                 
