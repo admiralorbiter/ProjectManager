@@ -99,12 +99,34 @@ class Task(db.Model):
     
     # New fields for enhanced features
     notes = db.Column(db.Text)
+    
+    # Add new relationships for feedback and submissions
+    feedback = db.relationship('Feedback', back_populates='task', cascade='all, delete-orphan')
+    submissions = db.relationship('Submission', back_populates='task', cascade='all, delete-orphan')
+
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    feedback_text = db.Column(db.Text, nullable=False)
+    feedback_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    feedback_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Relationships
+    task = db.relationship('Task', back_populates='feedback')
+    feedback_by = db.relationship('User')
+
+class Submission(db.Model):
+    __tablename__ = 'submissions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     submission_text = db.Column(db.Text)
     submission_url = db.Column(db.String(500))
-    submission_date = db.Column(db.DateTime)
-    feedback = db.Column(db.Text)
-    feedback_date = db.Column(db.DateTime)
-    feedback_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    submission_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
-    # New relationship for feedback
-    feedback_by = db.relationship('User', foreign_keys=[feedback_by_id])
+    # Relationships
+    task = db.relationship('Task', back_populates='submissions')
+    submitted_by = db.relationship('User')

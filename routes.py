@@ -1,7 +1,7 @@
 from flask import flash, redirect, render_template, url_for, request, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from forms import LoginForm
-from models import User, db, Project, Task
+from models import User, db, Project, Task, Submission, Feedback
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timezone
 import werkzeug.exceptions
@@ -579,15 +579,24 @@ def init_routes(app):
                         flash('Invalid URL format', 'error')
                         return redirect(url_for('task_detail', task_id=task_id))
                 
-                task.submission_text = request.form.get('submission_text')
-                task.submission_url = submission_url
-                task.submission_date = datetime.now(timezone.utc)
+                # Create new submission
+                new_submission = Submission(
+                    task_id=task_id,
+                    submission_text=request.form.get('submission_text'),
+                    submission_url=submission_url,
+                    submitted_by_id=current_user.id
+                )
+                db.session.add(new_submission)
                 flash('Submission saved successfully!', 'success')
                 
             elif action == 'feedback' and (current_user.is_administrator() or project.owner_id == current_user.id):
-                task.feedback = request.form.get('feedback')
-                task.feedback_date = datetime.now(timezone.utc)
-                task.feedback_by_id = current_user.id
+                # Create new feedback
+                new_feedback = Feedback(
+                    task_id=task_id,
+                    feedback_text=request.form.get('feedback'),
+                    feedback_by_id=current_user.id
+                )
+                db.session.add(new_feedback)
                 flash('Feedback provided successfully!', 'success')
                 
             elif action == 'notes':
@@ -597,4 +606,11 @@ def init_routes(app):
             db.session.commit()
             return redirect(url_for('task_detail', task_id=task_id))
         
-        return render_template('task_detail.html', task=task)
+        # Get submissions and feedback ordered by date
+        submissions = Submission.query.filter_by(task_id=task_id).order_by(Submission.submission_date.desc()).all()
+        feedback_entries = Feedback.query.filter_by(task_id=task_id).order_by(Feedback.feedback_date.desc()).all()
+        
+        return render_template('task_detail.html', 
+                             task=task, 
+                             submissions=submissions,
+                             feedback_entries=feedback_entries)

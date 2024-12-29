@@ -1,235 +1,160 @@
-/* Task Detail Page Styles */
+/* Task Detail Page Layout */
 .task-detail-container {
     max-width: 1200px;
     margin: 2rem auto;
-    padding: 0 1rem;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Header Section */
 .task-header {
+    background-color: var(--dark-purple);
+    color: var(--pale-dogwood);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--pale-dogwood);
 }
 
 .header-left h1 {
-    color: var(--dark-purple);
     font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--pale-dogwood);
 }
 
 .task-badges {
     display: flex;
     gap: 1rem;
-    margin-top: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .status-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 1rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 2rem;
     font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
 }
 
-.status-badge.open { background-color: #e3f2fd; color: #1976d2; }
-.status-badge.in_progress { background-color: #fff3e0; color: #f57c00; }
-.status-badge.completed { background-color: #e8f5e9; color: #388e3c; }
-.status-badge.blocked { background-color: #ffebee; color: #d32f2f; }
-
-.subtask-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 1rem;
-    background-color: var(--pale-dogwood);
-    color: var(--dark-purple);
-    font-size: 0.9rem;
-}
-
-/* Task Content Sections */
+/* Content Sections */
 .task-content {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 3fr 2fr;
     gap: 2rem;
 }
 
-.task-content section {
+.content-left, .content-right {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+section {
     background-color: white;
     padding: 2rem;
     border-radius: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--pale-dogwood);
 }
 
-.task-content h2 {
+section h2 {
     color: var(--dark-purple);
     font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--pale-dogwood);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--dark-purple);
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--pale-dogwood);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--dark-purple);
+    outline: none;
+}
+
+/* Submission & Feedback History */
+.history-entry {
+    background-color: #fafafa;
+    padding: 1.5rem;
+    border-radius: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--pale-dogwood);
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--pale-dogwood);
 }
 
-/* Form Elements */
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--pale-dogwood);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 1rem;
-}
-
-textarea.form-control {
-    min-height: 150px;
-    resize: vertical;
-}
-
-/* Submission Section */
-.submission-details {
-    background-color: #fafafa;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-}
-
-.submission-meta {
+.entry-meta {
     font-size: 0.9rem;
-    color: #666;
-    margin-top: 1rem;
+    color: var(--dark-purple);
 }
 
-/* Feedback Section */
-.feedback-display {
-    background-color: #fff8e1;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
+.entry-content {
     margin-top: 1rem;
-}
-
-.feedback-content {
-    margin-bottom: 1rem;
     line-height: 1.6;
 }
 
-.feedback-meta {
-    font-size: 0.9rem;
-    color: #666;
-    border-top: 1px solid #ddd;
-    padding-top: 0.5rem;
-}
-
 /* Buttons */
-.submit-btn {
-    background-color: var(--redwood);
-    color: var(--pale-dogwood);
-    padding: 0.75rem 1.5rem;
-    border: none;
+.btn {
+    padding: 0.8rem 1.5rem;
     border-radius: 0.5rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    border: none;
+    text-align: center;
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+.submit-btn {
+    background-color: var(--redwood);
+    color: var(--pale-dogwood);
 }
 
 .submit-btn:hover {
     background-color: var(--eggplant);
+    transform: translateY(-2px);
 }
 
 .back-btn {
-    background-color: var(--dark-purple);
+    background-color: transparent;
     color: var(--pale-dogwood);
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background-color 0.3s ease;
+    border: 2px solid var(--pale-dogwood);
+    margin-top: 0;
 }
 
 .back-btn:hover {
-    background-color: var(--eggplant);
-    color: var(--pale-dogwood);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .task-content {
-        grid-template-columns: 1fr;
-    }
-
-    .task-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .header-left h1 {
-        font-size: 2rem;
-    }
-
-    .task-content section {
-        padding: 1.5rem;
-    }
-}
-
-/* Task Info Sidebar */
-.task-sidebar {
-    background-color: #fafafa;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    height: fit-content;
-}
-
-.task-info-item {
-    margin-bottom: 1.5rem;
-}
-
-.task-info-item h3 {
-    font-size: 1.1rem;
+    background-color: var(--pale-dogwood);
     color: var(--dark-purple);
-    margin-bottom: 0.5rem;
-}
-
-.task-info-item p {
-    color: var(--raisin-black);
-    line-height: 1.4;
-}
-
-/* Assignment Section */
-.assignment-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background-color: #f5f5f5;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-}
-
-.assignee-avatar {
-    width: 40px;
-    height: 40px;
-    background-color: var(--dark-purple);
-    color: var(--pale-dogwood);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.assignee-details {
-    flex-grow: 1;
-}
-
-.assignee-name {
-    font-weight: 600;
-    color: var(--dark-purple);
-}
-
-.assignment-date {
-    font-size: 0.9rem;
-    color: #666;
 } 
