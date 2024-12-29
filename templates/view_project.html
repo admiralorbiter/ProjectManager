@@ -65,7 +65,10 @@
                                            {% if task.is_completed %}checked{% endif %}
                                            onchange="toggleTaskCompletion({{ task.id }})">
                                     <h3>
-                                        <a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a>
+                                        <a href="{{ url_for('task_detail', task_id=task.id) }}" class="task-link">
+                                            {{ task.title }}
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
                                         <button type="button" class="add-subtask-btn" onclick="handleSubtaskClick({{ task.id }}, '{{ task.title|e }}')">+</button>
                                         {% if current_user.is_administrator() %}
                                         <div class="admin-task-actions">
@@ -103,7 +106,10 @@
                                                {% if subtask.is_completed %}checked{% endif %}
                                                onchange="toggleTaskCompletion({{ subtask.id }})">
                                         <h4>
-                                            <a href="{{ url_for('task_detail', task_id=subtask.id) }}">{{ subtask.title }}</a>
+                                            <a href="{{ url_for('task_detail', task_id=subtask.id) }}" class="task-link">
+                                                {{ subtask.title }}
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
                                             {% if current_user.is_administrator() %}
                                             <div class="admin-task-actions">
                                                 <button type="button" class="task-action-btn edit" onclick="handleEditTask({{ subtask.id }}, '{{ subtask.title|e }}', '{{ subtask.description|e }}')">

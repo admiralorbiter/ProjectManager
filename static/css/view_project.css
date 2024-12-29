@@ -5,17 +5,20 @@
 }
 
 .project-header {
+    background-color: var(--dark-purple);
+    color: var(--pale-dogwood);
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--eggplant);
+    align-items: center;
 }
 
 .header-left h1 {
-    margin-bottom: 0.5rem;
-    color: var(--dark-purple);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--pale-dogwood);
 }
 
 .project-badges {
@@ -24,9 +27,12 @@
 }
 
 .priority-badge, .status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 2rem;
     font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .edit-btn {
@@ -129,11 +135,17 @@
 
 .task-card {
     background-color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.3s ease;
+    padding: 1.25rem;
+    border-radius: 0.8rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 1px solid var(--pale-dogwood);
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .task-card.completed {
@@ -148,15 +160,32 @@
 }
 
 .task-status {
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
-.task-status.open { background-color: #e3f2fd; color: #1565c0; }
-.task-status.in_progress { background-color: #fff3e0; color: #ef6c00; }
-.task-status.completed { background-color: #e8f5e9; color: #2e7d32; }
-.task-status.blocked { background-color: #ffebee; color: #c62828; }
+.task-status.open { 
+    background-color: #e3f2fd; 
+    color: #1565c0; 
+}
+
+.task-status.in_progress { 
+    background-color: #fff3e0; 
+    color: #ef6c00; 
+}
+
+.task-status.completed { 
+    background-color: #e8f5e9; 
+    color: #2e7d32; 
+}
+
+.task-status.blocked { 
+    background-color: #ffebee; 
+    color: #c62828; 
+}
 
 .task-title-group {
     display: flex;
@@ -183,20 +212,24 @@
 }
 
 .subtasks-container {
-    margin-left: 2rem;
-    border-left: 2px solid var(--eggplant);
-    padding-left: 1rem;
-    margin-top: 0.25rem;
+    margin-left: 2.5rem;
+    border-left: 3px solid var(--pale-dogwood);
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
 }
 
 .subtask-card {
     background-color: #f8f9fa;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    margin-bottom: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid var(--pale-dogwood);
+}
+
+.subtask-card:hover {
+    transform: translateX(4px);
+    background-color: white;
 }
 
 .subtask-header {
@@ -237,7 +270,15 @@
 .show-completed {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--dark-purple);
+}
+
+.show-completed input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
     cursor: pointer;
 }
 
@@ -606,4 +647,115 @@ textarea.form-control {
 /* Ensure proper spacing between different action groups */
 .subtask-actions {
     margin-left: auto;  /* Push assignment actions to the right */
+}
+
+/* Task Link Styling */
+.task-title-group h3 a {
+    color: var(--dark-purple);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.task-title-group h3 a:hover {
+    color: var(--redwood);
+}
+
+.task-title-group h3 a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--redwood);
+    transition: width 0.3s ease;
+}
+
+.task-title-group h3 a:hover::after {
+    width: 100%;
+}
+
+/* Add Task Button Enhancement */
+.add-task-btn {
+    background-color: var(--redwood);
+    color: var(--pale-dogwood);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-task-btn:hover {
+    background-color: var(--eggplant);
+    transform: translateY(-2px);
+}
+
+/* Task Link Styling */
+.task-link {
+    color: var(--dark-purple);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.task-link:hover {
+    color: var(--redwood);
+}
+
+.task-link i {
+    font-size: 0.8em;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.task-link:hover i {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+/* Subtask specific styling */
+.subtask-card .task-link {
+    font-size: 0.95rem;
+    color: var(--eggplant);
+}
+
+.subtask-card .task-link:hover {
+    color: var(--redwood);
+}
+
+/* Task title group adjustments */
+.task-title-group h3, 
+.task-title-group h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Add subtask button refinements */
+.add-subtask-btn {
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    background-color: var(--pale-dogwood);
+    color: var(--dark-purple);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.add-subtask-btn:hover {
+    background-color: var(--redwood);
+    color: var(--pale-dogwood);
+    transform: translateY(-1px);
 }
