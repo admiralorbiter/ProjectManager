@@ -96,3 +96,15 @@ class Task(db.Model):
     assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
     created_by = db.relationship('User', foreign_keys=[created_by_id])
     subtasks = db.relationship('Task', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
+    
+    # New fields for enhanced features
+    notes = db.Column(db.Text)
+    submission_text = db.Column(db.Text)
+    submission_url = db.Column(db.String(500))
+    submission_date = db.Column(db.DateTime)
+    feedback = db.Column(db.Text)
+    feedback_date = db.Column(db.DateTime)
+    feedback_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # New relationship for feedback
+    feedback_by = db.relationship('User', foreign_keys=[feedback_by_id])

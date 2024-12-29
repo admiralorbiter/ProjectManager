@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} - Task Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/task_detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="task-detail-container">
+    <div class="task-header">
+        <div class="header-left">
+            <h1>{{ task.title }}</h1>
+            <div class="task-badges">
+                <span class="status-badge {{ task.status }}">{{ task.status }}</span>
+                {% if task.parent %}
+                <span class="subtask-badge">Subtask of: {{ task.parent.title }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="{{ url_for('view_project', project_id=task.project.id) }}" class="btn back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+
+    <div class="task-content">
+        <section class="task-info">
+            <h2>Description</h2>
+            <p>{{ task.description or 'No description provided.' }}</p>
+        </section>
+
+        <section class="task-notes">
+            <h2>Notes</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="notes">
+                <textarea name="notes" class="form-control">{{ task.notes or '' }}</textarea>
+                <button type="submit" class="btn submit-btn">Save Notes</button>
+            </form>
+        </section>
+
+        {% if task.assigned_to_id == current_user.id %}
+        <section class="task-submission">
+            <h2>Submit Work</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="submit">
+                <div class="form-group">
+                    <label>Submission Text</label>
+                    <textarea name="submission_text" class="form-control">{{ task.submission_text or '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Submission URL</label>
+                    <input type="url" name="submission_url" class="form-control" value="{{ task.submission_url or '' }}">
+                </div>
+                <button type="submit" class="btn submit-btn">Submit Work</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if task.submission_text or task.submission_url %}
+        <section class="submission-details">
+            <h2>Submission Details</h2>
+            {% if task.submission_text %}
+            <div class="submission-text">
+                <h3>Submitted Text</h3>
+                <p>{{ task.submission_text }}</p>
+            </div>
+            {% endif %}
+            {% if task.submission_url %}
+            <div class="submission-url">
+                <h3>Submitted URL</h3>
+                <a href="{{ task.submission_url }}" target="_blank">{{ task.submission_url }}</a>
+            </div>
+            {% endif %}
+            <div class="submission-meta">
+                Submitted on: {{ task.submission_date.strftime('%Y-%m-%d %H:%M') }}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if current_user.is_administrator() or task.project.owner_id == current_user.id %}
+        <section class="feedback-section">
+            <h2>Provide Feedback</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="feedback">
+                <textarea name="feedback" class="form-control">{{ task.feedback or '' }}</textarea>
+                <button type="submit" class="btn submit-btn">Save Feedback</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if task.feedback %}
+        <section class="feedback-display">
+            <h2>Feedback</h2>
+            <div class="feedback-content">
+                {{ task.feedback }}
+            </div>
+            <div class="feedback-meta">
+                Provided by {{ task.feedback_by.username }} on {{ task.feedback_date.strftime('%Y-%m-%d %H:%M') }}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

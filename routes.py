@@ -3,7 +3,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 from forms import LoginForm
 from models import User, db, Project, Task
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 import werkzeug.exceptions
 
 def init_routes(app):
@@ -547,3 +547,41 @@ def init_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/tasks/<int:task_id>', methods=['GET', 'POST'])
+    @login_required
+    def task_detail(task_id):
+        task = Task.query.get_or_404(task_id)
+        project = task.project
+        
+        # Check if user has access to this task
+        if not (current_user.is_administrator() or 
+                project.owner_id == current_user.id or 
+                current_user in project.members or 
+                task.assigned_to_id == current_user.id):
+            flash('You do not have permission to view this task.', 'error')
+            return redirect(url_for('view_project', project_id=project.id))
+        
+        if request.method == 'POST':
+            action = request.form.get('action')
+            
+            if action == 'submit':
+                task.submission_text = request.form.get('submission_text')
+                task.submission_url = request.form.get('submission_url')
+                task.submission_date = datetime.now(timezone.utc)
+                flash('Submission saved successfully!', 'success')
+                
+            elif action == 'feedback' and (current_user.is_administrator() or project.owner_id == current_user.id):
+                task.feedback = request.form.get('feedback')
+                task.feedback_date = datetime.now(timezone.utc)
+                task.feedback_by_id = current_user.id
+                flash('Feedback provided successfully!', 'success')
+                
+            elif action == 'notes':
+                task.notes = request.form.get('notes')
+                flash('Notes updated successfully!', 'success')
+                
+            db.session.commit()
+            return redirect(url_for('task_detail', task_id=task_id))
+        
+        return render_template('task_detail.html', task=task)
